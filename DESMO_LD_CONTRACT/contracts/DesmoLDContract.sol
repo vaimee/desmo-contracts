@@ -16,25 +16,45 @@
  * limitations under the License.                                             *
  ******************************************************************************/
 
-pragma solidity ^0.8.3;
+//pragma solidity ^0.8.3;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
-contract OracleDummy {
+import "@iexec/poco/contracts/IexecInterfaceToken.sol";
+
+contract DESMOLDCONTRACT {
+    address internal constant IEXECPROXY = 0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f;
+    
+    IexecInterfaceToken iexecproxy;
+
+    struct AppOrder {
+        address app;
+        uint256 appprice;
+        uint256 volume;
+        bytes32 tag;
+        address datasetrestrict;
+        address workerpoolrestrict;
+        address requesterrestrict;
+        bytes32 salt;
+        bytes   sign;
+    }
+    
 
     mapping (bytes32 => bytes) oracleValue;
-
-    function receiveResult(bytes32 id, bytes memory _calldata)
     
-    public {
+    constructor () public {
+        iexecproxy = IexecInterfaceToken(payable(IEXECPROXY));
+    }    
+
+    function receiveResult(bytes32 id, bytes memory _calldata) public {
         oracleValue[id] = _calldata;
     }
 
-    function getRaw(bytes32 _oracleId)
-    
-    public view
-
-    returns(bytes memory bytesValue) {
+    function getRaw(bytes32 _oracleId) public view returns(bytes memory bytesValue) {
         return oracleValue[_oracleId];
     }
 
+    function placeOrder (AppOrder calldata order) public {
+        return iexecproxy.broadcastAppOrder(order);
+    }
 }
