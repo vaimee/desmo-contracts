@@ -4,13 +4,15 @@ import "hardhat/console.sol";
 
 contract desmo_ld_hub {
     // What is the parameters required by the hub?
+    string[] tddStorager;
 
     constructor(string memory _greeting) {
         console.log("Deploying the desmo HUB");
     }
 
-    function registerTDD() {
+    function registerTDD(string tddID) {
         // Register the TDD on the data struct
+        tddStorager.push(tddID);
     }
 
     function unregisterTDD() {
