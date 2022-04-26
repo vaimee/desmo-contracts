@@ -3,6 +3,7 @@ import { ethers } from "hardhat";
 
 describe("Greeter", function () {
   it("Should return the new greeting once it's changed", async function () {
+    
     const Greeter = await ethers.getContractFactory("Greeter");
     const greeter = await Greeter.deploy("Hello, world!");
     await greeter.deployed();
@@ -17,3 +18,14 @@ describe("Greeter", function () {
     expect(await greeter.greet()).to.equal("Hola, mundo!");
   });
 });
+
+describe("DESMO-LD HUB", function () {
+  it("Should store new DiD", async function () {
+    const DESMOHUB = await ethers.getContractFactory("DESMOLDHUB.sol");
+    const hub = await DESMOHUB.deploy();
+    await hub.deployed();
+
+    
+
+  });
+}); 
