@@ -18,18 +18,21 @@ contract desmo_ld_hub {
     }
 
     function viewStorage()
-    public
-    returns (string[] memory) {
+    public {
         for (uint256 i = 0; i <= tddStorage.length - 1; i++) {
             string memory s = tddStorage[i];
             console.log("TDD at position '%d' is '%s' ", i, s);
         }
     }
 
-    function viewSelected()
-    public
-    view {
+    function viewSelected(uint256 id)
+    public {
+        string[] memory tddSubset = getTDDByRequestID(id);
 
+        for (uint256 i = 0; i <= tddSubset.length - 1; i++) {
+            string memory s = tddSubset[i];
+            console.log("TDD at position '%d' is '%s' ", i, s);
+        }
     }
 
     // Register the TDD on the data struct
@@ -86,8 +89,7 @@ contract desmo_ld_hub {
 
     // Returns the list of the TDDs subset
     function getTDDByRequestID(uint256 key) 
-    external
-    view
+    public
     returns (string[] memory) {
         return selectedTDDs[key];
     }
