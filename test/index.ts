@@ -29,21 +29,6 @@ describe("DESMO-LD HUB", function () {
     await hubRegisterTDD.wait();
   });
 
-  it("Should show the storager", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
-    const hub = await DESMOHUB.deploy();
-    await hub.deployed();
-    
-    let hubRegisterTDD = await hub.registerTDD("urn:thing:description:directory:tdd1");
-    hubRegisterTDD = await hub.registerTDD("urn:thing:description:directory:tdd2");
-    hubRegisterTDD = await hub.registerTDD("urn:thing:description:directory:tdd3");
-    hubRegisterTDD = await hub.registerTDD("urn:thing:description:directory:tdd4");
-    await hubRegisterTDD.wait();
-    
-    let hubStorage = await hub.viewStorage();
-    await hubStorage.wait();
-  });
-
   it("Should unregister TDD", async function () {
     const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
     const hub = await DESMOHUB.deploy();

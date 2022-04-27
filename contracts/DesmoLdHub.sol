@@ -26,19 +26,17 @@ contract desmo_ld_hub {
         }
     }
 
-    // function viewSelected()
-    // public
-    // view {
+    function viewSelected()
+    public
+    view {
 
-    // }
+    }
 
     // Register the TDD on the data struct
     function registerTDD(string memory tddID) 
     external 
     returns (bool flag){
-        //tddStorage[msg.sender] = tddID;
         tddStorage.push(tddID);
-        console.log("Storing TDD '%s' at position '%d'", tddID, tddStorage.length-1);
         return true;
     }
     
