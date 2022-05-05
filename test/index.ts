@@ -1,24 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-// describe("Greeter", function () {
-//   it("Should return the new greeting once it's changed", async function () {
-    
-//     const Greeter = await ethers.getContractFactory("Greeter");
-//     const greeter = await Greeter.deploy("Hello, world!");
-//     await greeter.deployed();
-
-//     expect(await greeter.greet()).to.equal("Hello, world!");
-
-//     const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
-
-//     // wait until the transaction is mined
-//     await setGreetingTx.wait();
-
-//     expect(await greeter.greet()).to.equal("Hola, mundo!");
-//   });
-// });
-
 describe("DESMO-LD HUB", function () {
   it("Should register new TDD", async function () {
     const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
@@ -48,7 +30,7 @@ describe("DESMO-LD HUB", function () {
     await hubUnregisterTDD.wait();
   });
 
-  it("Should return a key for the selected TDDs", async function () {
+  it("Should return a key to retriece the selected TDDs", async function () {
     const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
@@ -65,7 +47,7 @@ describe("DESMO-LD HUB", function () {
 
   });
 
-  it("Should return the selected TDDs", async function () {
+  it("Should retrieve the selected TDDs by key", async function () {
     const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
@@ -82,5 +64,4 @@ describe("DESMO-LD HUB", function () {
     let subsetTDDs = await hub.viewSelected("1390849295786071768276380950238675083608645509734");
     // call funtion to return the tdd subset list 
   });
-
 }); 
