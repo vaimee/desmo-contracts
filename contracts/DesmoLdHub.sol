@@ -4,29 +4,51 @@ import "hardhat/console.sol";
 
 contract desmo_ld_hub {
     
+    // TDD struct
+    struct TDD {
+        string url;
+    }
+    
     // TDDs storager
-    string[] internal tddStorage;
+    //string[] internal tddStorage;
+    mapping(address =>TDD) private tddStorager;
+
+    //register of all addresses registered; 
+    address[] private addressRegisters;
+
+    // TDD index counter
+    uint256 private tddStoragerCounter = 0;
+
+    // 
+    mapping(address => uint256) private addressRef;
     
     // Ammount of TDDs to be selected
     uint internal quant = 3;
     
-    //Maaping to return the selected TDDs
+    //Maping to return the selected TDDs
     mapping (uint256 => string[]) private selectedTDDs;
+    
     
     constructor() {
         console.log("Deploying the desmo HUB");
     }
 
-    function viewStorage()
-    public {
-        for (uint256 i = 0; i <= tddStorage.length - 1; i++) {
-            string memory s = tddStorage[i];
-            console.log("TDD at position '%d' is '%s' ", i, s);
-        }
-    }
+    //TODO create modifiers to check the address
+    modifier onlyOwner() {
+        require(addressRegisters[addressRef[msg.sender]-1] == msg.sender);
+        _;
+    } 
+
+    // //TODO create a modifier to check if address is already on the tddStorager
+    // modifier addressAlreadyInPlace() {
+    //     require(addressRef[msg.sender], "Sender already stored a value.");
+    //     _;
+    // }
+
 
     function viewSelected(uint256 id)
-    public {
+    public 
+    view {
         string[] memory tddSubset = getTDDByRequestID(id);
 
         for (uint256 i = 0; i <= tddSubset.length - 1; i++) {
@@ -35,40 +57,58 @@ contract desmo_ld_hub {
         }
     }
 
-    // Register the TDD on the data struct
-    function registerTDD(string memory tddID) 
-    external 
+    //Register the TDD on the data struct
+    function registerTDD(TDD memory tdd) 
+    //addressAlreadyInPlace
+    external
     returns (bool flag){
-        tddStorage.push(tddID);
+        //tddStorage.push(tddID);
+        tddStorager[msg.sender] = tdd;
+        addressRegisters.push(msg.sender);
+        tddStoragerCounter+=1;
+        addressRef[msg.sender] = tddStoragerCounter;
+
+        console.log(tddStoragerCounter);
+        
         return true;
     }
     
     function remove(uint256 index)
     internal {
-        tddStorage[index] = tddStorage[tddStorage.length - 1];
-        tddStorage.pop();
+        addressRegisters[index] = addressRegisters[tddStoragerCounter - 1];
+        addressRegisters.pop();
+        tddStoragerCounter-=1;
     }
 
     //Remove the TDD of the data struct 
-    function unregisterTDD(string memory tddID) 
+    function unregisterTDD()
+    // onlyOwner
     external {    
-        // We must verify the ownership of the TDD
+        //TODO We must verify the ownership of the TDD
+        delete tddStorager[msg.sender];
+        delete addressRef[msg.sender];
+        remove(addressRef[msg.sender]);
+        console.log(tddStoragerCounter);
+        
+
         // find the index of the TDDid and then remove
-        for (uint256 i = 0; i <= tddStorage.length - 1; i++) {
-            string memory s = tddStorage[i];
+        // for (uint256 i = 0; i <= tddStorage.length - 1; i++) {
+        //     string memory s = tddStorage[i];
             
-            if(keccak256(bytes(s)) == keccak256(bytes(tddID))){
-                remove(i);
-                console.log("TDD: '%s' removed and is '%s'", tddID, s);
-            }
-        }
+        //     if(keccak256(bytes(s)) == keccak256(bytes(tddID))){
+        //         remove(i);
+        //         console.log("TDD: '%s' removed and is '%s'", tddID, s);
+        //     }
+        // }
+        
     }
     
     function randomNumber(uint256 n) 
-    internal 
+    internal
+    view
     returns (uint) {
-        uint randomnumber = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, n))) % tddStorage.length;
-        return randomnumber;
+        uint randomNumber = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, n))) %tddStoragerCounter;
+        return randomNumber;
     }
 
     // Return the ID of the ramdoly selected TDDs subset
@@ -80,7 +120,7 @@ contract desmo_ld_hub {
 
         for (uint256 i = 0; i <= quant; i++){
             uint256 index = randomNumber(i);
-            selectedTDDs[key].push(tddStorage[index]);
+            selectedTDDs[key].push(tddStorager[addressRegisters[index]].url);
         }
 
         console.log("This is the key '%s'", key);
@@ -90,6 +130,7 @@ contract desmo_ld_hub {
     // Returns the list of the TDDs subset
     function getTDDByRequestID(uint256 key) 
     public
+    view
     returns (string[] memory) {
         return selectedTDDs[key];
     }
