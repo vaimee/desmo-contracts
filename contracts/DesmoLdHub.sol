@@ -48,10 +48,10 @@ contract desmo_ld_hub {
     }
     
     // Modifier to check the msg.address == TDD owner
-    modifier onlyOwner() {
+    modifier onlyTDDOwner() {
         require(msg.sender == tddStorager[msg.sender].owner, "Not the TDD owner");
         _;
-    } 
+    }   
     
     // Modifier to ensure the retrival of a subset of TDDs > 0
     modifier notEmptyTDDStorager () {
@@ -98,7 +98,7 @@ contract desmo_ld_hub {
     //Remove the TDD of the data struct 
     function unregisterTDD(uint256 index)
     external
-    onlyOwner {    
+    onlyTDDOwner {    
         delete tddStorager[msg.sender];
         remove(index);
         //console.log("TDDs counter: '%d' ", tddStoragerCounter);   
@@ -113,15 +113,20 @@ contract desmo_ld_hub {
     }
 
     // Return the ID of the ramdoly selected TDDs subset
-    // should be "payable" in the future
-    // clould charge for more TDDs
-    // could charge for unique TDDs
+    // can "payable" in the future
+    // can charge for more TDDs
+    // can charge for unique TDDs
     function getNewRequestID() 
     external
     notEmptyTDDStorager
     returns (uint256) {    
         uint256 key = uint256(uint160(address(msg.sender)));
 
+        if(quant > tddStoragerCounter){
+            quant = tddStoragerCounter;
+        }
+        console.log(quant);
+        
         for (uint256 i = 0; i <= quant - 1; i++){
             uint256 index = randomNumber(i);
             selectedTDDs[key].push(tddStorager[addressRegisters[index]].url);

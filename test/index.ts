@@ -148,7 +148,7 @@ describe("DESMO-LD HUB", function () {
     await hub.deployed();
     
 
-    const [addr1, addr2, addr3] = await ethers.getSigners();
+    const [addr1, addr2, addr3, addr4] = await ethers.getSigners();
 
     const TDD = {
       url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -174,6 +174,14 @@ describe("DESMO-LD HUB", function () {
     const hubRegisterTDD3 = await hub.connect(addr3).registerTDD(TDD3);
     await hubRegisterTDD3.wait();
 
+    const TDD4 = {
+      url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:004",
+      owner: addr4.address
+    }
+ 
+    const hubRegisterTDD4 = await hub.connect(addr4).registerTDD(TDD4);
+    await hubRegisterTDD4.wait();
+
     let idRequester = await hub.connect(addr1).getNewRequestID();
     await idRequester.wait(); 
 
@@ -181,4 +189,34 @@ describe("DESMO-LD HUB", function () {
     // call funtion to return the tdd subset list 
   });
 
+  it("Should restrieve smaller subset", async function () {
+    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+    const hub = await DESMOHUB.deploy();
+    await hub.deployed();
+    
+
+    const [addr1, addr2, addr3] = await ethers.getSigners();
+
+    const TDD = {
+      url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
+      owner: addr1.address
+    }
+
+    const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
+    await hubRegisterTDD.wait();
+
+    const TDD2 = {
+      url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
+      owner: addr2.address
+    }
+
+    const hubRegisterTDD2 = await hub.connect(addr2).registerTDD(TDD2);
+    await hubRegisterTDD2.wait();
+
+    let idRequester = await hub.connect(addr1).getNewRequestID();
+    await idRequester.wait(); 
+
+    //let subsetTDDs = await hub.connect(addr1).viewSelected("1390849295786071768276380950238675083608645509734");
+    // call funtion to return the tdd subset list 
+  });
 }); 
