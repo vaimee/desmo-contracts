@@ -3,10 +3,9 @@ import { Console } from "console";
 import { ethers } from "hardhat";
 
 
-describe("DESMO-LD HUB", function () {
-
+describe("DESMO-LD HUB - TDD Maintenece", function () {
   it("Should register new TDD", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
     
@@ -17,13 +16,12 @@ describe("DESMO-LD HUB", function () {
       owner: addr1.address
     }
 
-    let hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-    await hubRegisterTDD.wait();
-    //await hubRegisterTDD.wait();
+    const hubRegisterTDD = hub.connect(addr1).registerTDD(TDD);
+    await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address); 
   });
 
-  it("Should not register new TDD", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+  it("Should fail to register new TDD", async function () {
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
     
@@ -40,13 +38,13 @@ describe("DESMO-LD HUB", function () {
     }
 
     let hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-    await hubRegisterTDD.wait();
+    await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address); 
 
     await expect(hub.connect(addr1).registerTDD(TDD2)).to.be.revertedWith('Sender already stored a value.');
   });
 
   it("Should disable TDD", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
 
@@ -58,22 +56,22 @@ describe("DESMO-LD HUB", function () {
     }
 
     const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-    await hubRegisterTDD.wait();
+    await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address);
 
     const TDD2 = {
       url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
       owner: addr2.address
     }
  
-    const hubRegisterTDD2 = await hub.connect(addr2).registerTDD(TDD2);
-    await hubRegisterTDD2.wait();
+    const hubRegisterTDD2 = hub.connect(addr2).registerTDD(TDD2);  
+    await expect(hubRegisterTDD2).emit(hub, "TDDCreated").withArgs(addr2.address);
 
-    const hubUnregisterTDD = await hub.connect(addr1).disableTDD(true);
-    await hubUnregisterTDD.wait();
+    const hubDisableTDD = hub.connect(addr1).disableTDD(true);
+    await expect(hubDisableTDD).emit(hub, "TDDDisabled").withArgs(addr1.address);
   });
 
   it("Should fail to disable TDD", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
 
@@ -85,13 +83,13 @@ describe("DESMO-LD HUB", function () {
     }
 
     const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-    await hubRegisterTDD.wait();
+    await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address);
 
     await expect(hub.connect(addr2).disableTDD(true)).to.be.revertedWith('Not the TDD owner.');
   });
 
   it("Should enable TDD", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
 
@@ -102,27 +100,21 @@ describe("DESMO-LD HUB", function () {
       owner: addr1.address
     }
 
-    let hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-    await hubRegisterTDD.wait();
-
-    const TDD2 = {
-      url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
-      owner: addr2.address
-    }
- 
-    const hubRegisterTDD2 = await hub.connect(addr2).registerTDD(TDD2);
-    await hubRegisterTDD2.wait();
+    const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
+    await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address);
 
     // expect(await hub.connect(addr1).disableTDD(true)).to.equal(1);
-    hubRegisterTDD = await hub.connect(addr1).disableTDD(true);
-    await hubRegisterTDD.wait();
+    const hubDisableTDD = hub.connect(addr1).disableTDD(true);
+    await expect(hubDisableTDD).emit(hub, "TDDDisabled").withArgs(addr1.address);
 
-    hubRegisterTDD = await hub.connect(addr1).disableTDD(false);
-    await hubRegisterTDD.wait();
+    const hubEnableTDD = await hub.connect(addr1).disableTDD(false);
+    await expect(hubEnableTDD).emit(hub, "TDDEnabled").withArgs(addr1.address);
   });
+});
 
-  it("Should return a key to retrieve the selected TDDs", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+describe("DESMO-LD HUB - Select TDD Subset Transactions", function () {
+  it("Should return a key to retrieve the TDD subset", async function () {
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
 
@@ -157,15 +149,15 @@ describe("DESMO-LD HUB", function () {
   });
 
   it("Should fail to retrieve TDD from an empty TDD Storager", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
 
     await expect(hub.getNewRequestID()).to.be.revertedWith('No TDD available. '); 
   });
   
-  it("Should retrieve the selected TDDs by key", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+  it("Should retrieve the TDD subset by key", async function () {
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
     
@@ -229,8 +221,8 @@ describe("DESMO-LD HUB", function () {
     // call funtion to return the tdd subset list 
   });
 
-  it("Should retrieve smaller subset", async function () {
-    const DESMOHUB = await ethers.getContractFactory("desmo_ld_hub");
+  it("Should retrieve smaller TDD subset", async function () {
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
     await hub.deployed();
     

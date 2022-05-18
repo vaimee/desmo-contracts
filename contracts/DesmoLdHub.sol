@@ -2,40 +2,43 @@ pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 
-contract desmo_ld_hub {
+contract DesmoLDHub {
     
     // TDD struct
     struct TDD {
         string url;
         address owner;
     }
+    // Ammount of TDDs to be selected
+    uint internal quant = 3;
+
+    // TDD counter
+    uint256 internal counter = 0; 
+
+    //register of all addresses registered; 
+    address[] private addressRegisters;
+
+    // TDD index counter
+    uint256 private tddStoragerCounter = 0;
     
     // TDDs storager
-    //string[] internal tddStorage;
     mapping(address => TDD) private tddStorager;
+
+    //Mapping to store the disabled TDDs
+    mapping (address => TDD) private disabledTDDs;
+    
 
     //Maping to return the selected TDDs
     mapping (uint256 => string[]) private selectedTDDs;
     
-    //register of all addresses registered; 
-    address[] private addressRegisters;
+    event TDDCreated(address key);
 
-    mapping (address => TDD) private disabledTDDs;
+    event TDDDisabled(address key);
 
-    // TDD index counter
-    uint256 private tddStoragerCounter = 0;
+    event TDDEnabled(address key);
 
-    // Ammount of TDDs to be selected
-    uint internal quant = 3;
-    
-    // TDD counter
-    uint256 internal counter = 0; 
-
-
-    constructor(){ 
+    constructor() { 
     }
-
-    
 
     // Modifier to check if address is already on the tddStorager
     modifier addressAlreadyInPlace() {
@@ -103,8 +106,7 @@ contract desmo_ld_hub {
     //Register the TDD on the data struct
     function registerTDD(TDD memory tdd)
     external
-    addressAlreadyInPlace
-    returns (bool) {
+    addressAlreadyInPlace {
         //tddStorage.push(tddID);
         if (verifyDisabled()){
             delete disabledTDDs[msg.sender];
@@ -114,19 +116,19 @@ contract desmo_ld_hub {
         addressRegisters.push(msg.sender);
         tddStoragerCounter+=1;
 
-        return true;
+        // TDD counter
+        emit TDDCreated(msg.sender);
     }
     
     
     function disableTDD(bool flag)
-    external
-    returns (uint){
+    external{
         if (flag) {
             if(verifyTDDStorager()){
                 disabledTDDs[msg.sender] = tddStorager[msg.sender];
                 delete tddStorager[msg.sender];
                 tddStoragerCounter -= 1;
-                return 1;
+                emit TDDDisabled(msg.sender);
             }else {
                 revert("Not the TDD owner.");
             }
@@ -136,22 +138,12 @@ contract desmo_ld_hub {
                 tddStorager[msg.sender] = disabledTDDs[msg.sender];
                 delete disabledTDDs[msg.sender];
                 tddStoragerCounter += 1;
-                return 1;
+                emit TDDEnabled(msg.sender);
             }else{
                 revert("No TDD owner or No TDD to enable.");
             }
         }
     }
-
-    // Funtion to generate ramdon number inside the interval 0 - tddStoragerCounter
-    function randomNumber(uint256 n) 
-    internal
-    view
-    returns (uint) {
-        return uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, n))) % tddStoragerCounter;
-    }
-
-
 
     // Return the ID of the ramdoly selected TDDs subset
     // can "payable" in the future
