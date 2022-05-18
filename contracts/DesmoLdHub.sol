@@ -26,7 +26,6 @@ contract DesmoLDHub {
 
     //Mapping to store the disabled TDDs
     mapping (address => TDD) private disabledTDDs;
-    
 
     //Maping to return the selected TDDs
     mapping (uint256 => string[]) private selectedTDDs;
@@ -88,7 +87,6 @@ contract DesmoLDHub {
         }
     }
 
-
     // Function to view the selected subset of TDDs
     function viewSelected(uint256 id)
     public 
@@ -103,7 +101,7 @@ contract DesmoLDHub {
         console.log("\n");
     }
 
-    //Register the TDD on the data struct
+    //Register new TDD
     function registerTDD(TDD memory tdd)
     external
     addressAlreadyInPlace {
@@ -120,7 +118,7 @@ contract DesmoLDHub {
         emit TDDCreated(msg.sender);
     }
     
-    
+    // Disable/enable TDD
     function disableTDD(bool flag)
     external{
         if (flag) {
@@ -148,7 +146,6 @@ contract DesmoLDHub {
     // Return the ID of the ramdoly selected TDDs subset
     // can "payable" in the future
     // can charge for more TDDs
-    // can charge for unique TDDs
     function getNewRequestID() 
     external
     notEmptyTDDStorager

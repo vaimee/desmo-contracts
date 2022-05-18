@@ -3,7 +3,7 @@ import { Console } from "console";
 import { ethers } from "hardhat";
 
 
-describe("DESMO-LD HUB - TDD Maintenece", function () {
+describe("DESMO-LD HUB - TDD Maintenece Transactions", function () {
   it("Should register new TDD", async function () {
     const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
     const hub = await DESMOHUB.deploy();
@@ -103,7 +103,6 @@ describe("DESMO-LD HUB - TDD Maintenece", function () {
     const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
     await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address);
 
-    // expect(await hub.connect(addr1).disableTDD(true)).to.equal(1);
     const hubDisableTDD = hub.connect(addr1).disableTDD(true);
     await expect(hubDisableTDD).emit(hub, "TDDDisabled").withArgs(addr1.address);
 
@@ -125,27 +124,27 @@ describe("DESMO-LD HUB - Select TDD Subset Transactions", function () {
       owner: addr1.address
     }
 
-    const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-    await hubRegisterTDD.wait();
+    const hubRegisterTDD = hub.connect(addr1).registerTDD(TDD);
+    await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address);
 
     const TDD2 = {
       url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
       owner: addr2.address
     }
 
-    const hubRegisterTDD2 = await hub.connect(addr2).registerTDD(TDD2);
-    await hubRegisterTDD2.wait();
+    const hubRegisterTDD2 = hub.connect(addr2).registerTDD(TDD2);
+    await expect(hubRegisterTDD2).emit(hub, "TDDCreated").withArgs(addr2.address);
 
     const TDD3 = {
       url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:003",
       owner: addr3.address
     }
  
-    const hubRegisterTDD3 = await hub.connect(addr3).registerTDD(TDD3);
-    await hubRegisterTDD3.wait();
+    const hubRegisterTDD3 = hub.connect(addr3).registerTDD(TDD3);
+    await expect(hubRegisterTDD3).emit(hub, "TDDCreated").withArgs(addr3.address);
 
-    let idRequester = await hub.connect(addr1).getNewRequestID();
-    await idRequester.wait(); 
+    let idRequester = hub.connect(addr1).getNewRequestID();
+    await expect(idRequester);
   });
 
   it("Should fail to retrieve TDD from an empty TDD Storager", async function () {
@@ -169,56 +168,53 @@ describe("DESMO-LD HUB - Select TDD Subset Transactions", function () {
       owner: addr1.address
     }
 
-    const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-    await hubRegisterTDD.wait();
+    const hubRegisterTDD = hub.connect(addr1).registerTDD(TDD);
+    await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address);
 
     const TDD2 = {
       url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
       owner: addr2.address
     }
 
-    const hubRegisterTDD2 = await hub.connect(addr2).registerTDD(TDD2);
-    await hubRegisterTDD2.wait();
+    const hubRegisterTDD2 = hub.connect(addr2).registerTDD(TDD2);
+    await expect(hubRegisterTDD2).emit(hub, "TDDCreated").withArgs(addr2.address);
 
     const TDD3 = {
       url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:003",
       owner: addr3.address
     }
  
-    const hubRegisterTDD3 = await hub.connect(addr3).registerTDD(TDD3);
-    await hubRegisterTDD3.wait();
+    const hubRegisterTDD3 = hub.connect(addr3).registerTDD(TDD3);
+    await expect(hubRegisterTDD3).emit(hub, "TDDCreated").withArgs(addr3.address);
 
     const TDD4 = {
       url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:004",
       owner: addr4.address
     }
  
-    const hubRegisterTDD4 = await hub.connect(addr4).registerTDD(TDD4);
-    await hubRegisterTDD4.wait();
+    const hubRegisterTDD4 = hub.connect(addr4).registerTDD(TDD4);
+    await expect(hubRegisterTDD4).emit(hub, "TDDCreated").withArgs(addr4.address);
 
-    let idRequester = await hub.connect(addr1).getNewRequestID();
-    await idRequester.wait(); 
+    let idRequester = hub.connect(addr1).getNewRequestID();
+    await expect(idRequester);
     
     //let subsetTDDs = await hub.connect(addr1).viewSelected(1652811379);
 
-    let idRequester2 = await hub.connect(addr1).getNewRequestID();
-    await idRequester.wait(); 
+    let idRequester2 = hub.connect(addr1).getNewRequestID();
+    await expect(idRequester2);
 
     //let subsetTDDs2 = await hub.connect(addr1).viewSelected("1390849295786071768276380950238675083608645509734");
     
-    let idRequester3 = await hub.connect(addr2).getNewRequestID();
-    await idRequester.wait();
+    let idRequester3 = hub.connect(addr2).getNewRequestID();
+    await expect(idRequester3);
 
 
     //let subsetTDDs3 = await hub.connect(addr1).viewSelected("642829559307850963015472508762062935916233390536");
 
-    let idRequester4 = await hub.connect(addr3).getNewRequestID();
-    await idRequester.wait(); 
+    let idRequester4 = hub.connect(addr3).getNewRequestID();
+    await expect(idRequester4);
     
     //let subsetTDDs4 = await hub.connect(addr3).viewSelected("344073830386746567427978432078835137280280269756");
-
-
-    // call funtion to return the tdd subset list 
   });
 
   it("Should retrieve smaller TDD subset", async function () {
@@ -234,19 +230,19 @@ describe("DESMO-LD HUB - Select TDD Subset Transactions", function () {
       owner: addr1.address
     }
 
-    const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-    await hubRegisterTDD.wait();
+    const hubRegisterTDD = hub.connect(addr1).registerTDD(TDD);
+    await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address);
 
     const TDD2 = {
       url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
       owner: addr2.address
     }
 
-    const hubRegisterTDD2 = await hub.connect(addr2).registerTDD(TDD2);
-    await hubRegisterTDD2.wait();
+    const hubRegisterTDD2 = hub.connect(addr2).registerTDD(TDD2);
+    await expect(hubRegisterTDD2).emit(hub, "TDDCreated").withArgs(addr2.address);
 
-    let idRequester = await hub.connect(addr1).getNewRequestID();
-    await idRequester.wait(); 
+    const idRequester = hub.connect(addr1).getNewRequestID();
+    await expect(idRequester);
 
     //let subsetTDDs = await hub.connect(addr1).viewSelected("1390849295786071768276380950238675083608645509734");
     // call funtion to return the tdd subset list 
