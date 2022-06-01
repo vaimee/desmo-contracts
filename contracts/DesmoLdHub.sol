@@ -118,7 +118,7 @@ contract DesmoLDHub {
         emit TDDCreated(msg.sender);
     }
     
-    // Disable/enable TDD
+    // Disable TDD
     function disableTDD(bool flag)
     external{
         if (flag) {
@@ -130,8 +130,13 @@ contract DesmoLDHub {
             }else {
                 revert("Not the TDD owner.");
             }
+        }
+    }
 
-        } else {
+    //Enable TDD
+    function enableTDD(bool flag)
+    external{
+        if (flag) {
             if(verifyDisabled()){
                 tddStorager[msg.sender] = disabledTDDs[msg.sender];
                 delete disabledTDDs[msg.sender];
@@ -142,7 +147,6 @@ contract DesmoLDHub {
             }
         }
     }
-
     // Return the ID of the ramdoly selected TDDs subset
     // can "payable" in the future
     // can charge for more TDDs
@@ -171,7 +175,7 @@ contract DesmoLDHub {
             counter+=1;
         }
 
-        //console.log("This is the key '%s' \n", key);
+        console.log("This is the key '%s' \n", key);
         return key;
     }
 

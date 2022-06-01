@@ -106,7 +106,7 @@ describe("DESMO-LD HUB - TDD Maintenece Transactions", function () {
     const hubDisableTDD = hub.connect(addr1).disableTDD(true);
     await expect(hubDisableTDD).emit(hub, "TDDDisabled").withArgs(addr1.address);
 
-    const hubEnableTDD = await hub.connect(addr1).disableTDD(false);
+    const hubEnableTDD = await hub.connect(addr1).enableTDD(true);
     await expect(hubEnableTDD).emit(hub, "TDDEnabled").withArgs(addr1.address);
   });
 });
@@ -195,24 +195,25 @@ describe("DESMO-LD HUB - Select TDD Subset Transactions", function () {
     const hubRegisterTDD4 = hub.connect(addr4).registerTDD(TDD4);
     await expect(hubRegisterTDD4).emit(hub, "TDDCreated").withArgs(addr4.address);
 
-    let idRequester = hub.connect(addr1).getNewRequestID();
-    await expect(idRequester);
+    const idRequester = await hub.connect(addr1).getNewRequestID.call(1390849295786071768276380950238675083608645509734);
+    //console.log(idRequester)
+    //expect(idRequester).eq(1390849295786071768276380950238675083608645509734);
     
     //let subsetTDDs = await hub.connect(addr1).viewSelected(1652811379);
 
-    let idRequester2 = hub.connect(addr1).getNewRequestID();
-    await expect(idRequester2);
+    // let idRequester2 = hub.connect(addr1).getNewRequestID();
+    // await expect(idRequester2);
 
-    //let subsetTDDs2 = await hub.connect(addr1).viewSelected("1390849295786071768276380950238675083608645509734");
+    // //let subsetTDDs2 = await hub.connect(addr1).viewSelected("1390849295786071768276380950238675083608645509734");
     
-    let idRequester3 = hub.connect(addr2).getNewRequestID();
-    await expect(idRequester3);
+    // let idRequester3 = hub.connect(addr2).getNewRequestID();
+    // await expect(idRequester3);
 
 
-    //let subsetTDDs3 = await hub.connect(addr1).viewSelected("642829559307850963015472508762062935916233390536");
+    // //let subsetTDDs3 = await hub.connect(addr1).viewSelected("642829559307850963015472508762062935916233390536");
 
-    let idRequester4 = hub.connect(addr3).getNewRequestID();
-    await expect(idRequester4);
+    // let idRequester4 = hub.connect(addr3).getNewRequestID();
+    // await expect(idRequester4);
     
     //let subsetTDDs4 = await hub.connect(addr3).viewSelected("344073830386746567427978432078835137280280269756");
   });
