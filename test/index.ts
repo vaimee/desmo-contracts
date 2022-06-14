@@ -7,18 +7,31 @@ import { DesmoLDHub } from "../typechain";
 
 
 describe("DESMO-LD contract", function (){
+  let hub: DesmoLDHub;
 
   beforeEach(async function () {
     // Get the ContractFactory and Signers here.
-
+    const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
+    hub = await DESMOHUB.deploy();
+    await hub.deployed();
   });
 
   describe("DESMO-LD HUB - Units tests", function () {
     it("Should register new TDD", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-      const [addr1, addr2, addr3, ...address] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
+      const [addr1] = await ethers.getSigners();
+
+      const TDD = {
+        url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
+        owner: addr1.address,
+        disabled: false
+      }
+  
+      const hubRegisterTDD = hub.connect(addr1).registerTDD(TDD);
+      await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url); 
+    });
+
+    it("Should register new TDD", async function () {
+      const [addr1] = await ethers.getSigners();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -31,10 +44,7 @@ describe("DESMO-LD contract", function (){
     });
   
     it("Should fail to register new TDD", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-      const [addr1, addr2, addr3, ...address] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
+      const [addr1] = await ethers.getSigners();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -55,10 +65,7 @@ describe("DESMO-LD contract", function (){
     });
   
     it("Should disable TDD", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-      const [addr1, addr2, addr3, ...address] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
+      const [addr1, addr2] = await ethers.getSigners();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -66,27 +73,27 @@ describe("DESMO-LD contract", function (){
         disabled: false
       }
   
-      const hubRegisterTDD = await hub.connect(addr1).registerTDD(TDD);
-      await expect(hubRegisterTDD).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
-  
       const TDD2 = {
         url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
         owner: addr2.address,
         disabled: false
-      }
-   
-      const hubRegisterTDD2 = hub.connect(addr2).registerTDD(TDD2);  
-      await expect(hubRegisterTDD2).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url);
+      }      
+      
+      await expect(
+        await hub.connect(addr1).registerTDD(TDD)
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+
+      await expect(
+        await hub.connect(addr2).registerTDD(TDD2)
+      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url);
   
-      const hubDisableTDD = hub.connect(addr1).disableTDD();
-      await expect(hubDisableTDD).emit(hub, "TDDDisabled").withArgs(addr1.address, TDD.url);
+      await expect(
+        hub.connect(addr1).disableTDD()
+      ).emit(hub, "TDDDisabled").withArgs(addr1.address, TDD.url);
     });
   
     it("Should fail to disable TDD", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-      const [addr1, addr2, addr3, ...address] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
+      const [addr1, addr2] = await ethers.getSigners();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -101,10 +108,7 @@ describe("DESMO-LD contract", function (){
     });
   
     it("Should enable TDD", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-      const [addr1, addr2, addr3, ...address] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
+      const [addr1] = await ethers.getSigners();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -123,11 +127,8 @@ describe("DESMO-LD contract", function (){
     });
   
     it("Should get TDD", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-      const [addr1, addr2, addr3, ...address] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
-  
+      const [addr1] = await ethers.getSigners();
+
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
         owner: addr1.address,
@@ -141,14 +142,19 @@ describe("DESMO-LD contract", function (){
       await expect(getTDD).emit(hub, "TDDRetrieval").withArgs(TDD.url, TDD.owner, TDD.disabled);
   
     });
+
+    it("Should get TDD", async function () {
+      const [addr1] = await ethers.getSigners();
+
+      const getTDD = await hub.connect(addr1).getTDD();
+      //await expect(getTDD).emit(hub, "TDDRetrieval").withArgs(TDD.url, TDD.owner, TDD.disabled);
+  
+    });
   });
   
   describe("DESMO-LD HUB - Transactions tests", function () {
     it("Should return a key to retrieve the TDD subset", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-      const [addr1, addr2, addr3, ...address] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
+      const [addr1, addr2, addr3] = await ethers.getSigners();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -182,19 +188,11 @@ describe("DESMO-LD contract", function (){
     });
   
     it("Should fail to retrieve TDD from an empty TDD Storager", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-      const [addr1, addr2, addr3, ...address] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
-  
       await expect(hub.getNewRequestID()).to.be.revertedWith('No TDD available. '); 
     });
     
     it("Should retrieve the TDD subset", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
       const [addr1, addr2, addr3, addr4] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -256,10 +254,7 @@ describe("DESMO-LD contract", function (){
     });
   
     it("Should retrieve smaller TDD subset", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
       const [addr1, addr2] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -281,16 +276,10 @@ describe("DESMO-LD contract", function (){
   
       const idRequester = hub.connect(addr1).getNewRequestID();
       await expect(idRequester);
-  
-      //let subsetTDDs = await hub.connect(addr1).viewSelected("1390849295786071768276380950238675083608645509734");
-      // call funtion to return the tdd subset list 
     });
   
     it("Should skip disabled TDD", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
       const [addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -351,10 +340,7 @@ describe("DESMO-LD contract", function (){
     });
     
     it("Should select different TDDs for each client", async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
       const [addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
-      const hub = await DESMOHUB.deploy();
-      await hub.deployed();
 
       const TDD = {
         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
