@@ -49,7 +49,7 @@ contract DesmoLDHub {
 
     // Modifier to check the msg.address == TDD owner
     modifier onlyTDDOwner() {
-        require(msg.sender == tddStorager[msg.sender].owner, "Not the TDD owner");
+        require(msg.sender == tddStorager[msg.sender].owner, "Not the TDD owner.");
         _;
     }   
 
@@ -96,6 +96,7 @@ contract DesmoLDHub {
 
     function getTDD()
     external
+    notEmptyTDDStorager
     onlyTDDOwner 
     returns (TDD memory){
         emit TDDRetrieval(tddStorager[msg.sender].url, tddStorager[msg.sender].owner, tddStorager[msg.sender].disabled);
