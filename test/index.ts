@@ -29,7 +29,8 @@ describe("DESMO-LD contract", function (){
         hub.connect(addr1).registerTDD(TDD)
       ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url); 
     });
-  
+    
+    // Should fail to register new TDD?
     it("Should fail to register new TDD", async function () {
       const [addr1] = await ethers.getSigners();
 
@@ -51,9 +52,9 @@ describe("DESMO-LD contract", function (){
   
       await expect(
         hub.connect(addr1).registerTDD(TDD2)
-      ).to.be.revertedWith('Sender already stored a value.');
+      ).to.be.revertedWith('Disable the last one');
     });
-  
+
     it("Should disable TDD", async function () {
       const [addr1, addr2] = await ethers.getSigners();
 
@@ -137,7 +138,7 @@ describe("DESMO-LD contract", function (){
   
       await expect(
         hub.connect(addr1).getTDD()
-      ).emit(hub, "TDDRetrieval").withArgs(TDD.url, TDD.owner, TDD.disabled);
+      ).emit(hub, "TDDRetrieval").withArgs(TDD.owner, TDD.url, TDD.disabled);
   
     });
 
@@ -170,6 +171,49 @@ describe("DESMO-LD contract", function (){
   });
   
   describe("DESMO-LD HUB - Transactions tests", function () {
+    // it("Should re-register new TDD", async function () {
+    //   const [addr1] = await ethers.getSigners();
+
+    //   const TDD = {
+    //     url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
+    //     owner: addr1.address,
+    //     disabled: false
+    //   }
+
+    //   const TDD2 = {
+    //     url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:001",
+    //     owner: addr1.address,
+    //     disabled: false
+    //   }
+      
+    //   await expect(
+    //     hub.connect(addr1).registerTDD(TDD)
+    //   ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      
+    //   await expect(
+    //     hub.connect(addr1).registerTDD(TDD2)
+    //   ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      
+
+    // });
+
+    // it("Should  fail re-register new TDD", async function () {
+    // const [addr1] = await ethers.getSigners();
+
+    // const TDD = {
+    //   url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
+    //   owner: addr1.address,
+    //   disabled: false
+    // }
+
+    // const TDD2 = {
+    //   url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:001",
+    //   owner: addr1.address,
+    //   disabled: false
+    // }
+    
+    // });
+
     it("Should return a key to retrieve the TDD subset", async function () {
       const [addr1, addr2, addr3] = await ethers.getSigners();
 
@@ -207,7 +251,7 @@ describe("DESMO-LD contract", function (){
         hub.connect(addr1).getNewRequestID()
       );
     });
-  
+
     it("Should fail to retrieve TDD from an empty TDD Storager", async function () {
       await expect(
         hub.getNewRequestID()

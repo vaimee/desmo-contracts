@@ -29,13 +29,13 @@ contract DesmoLDHub {
     //Maping to return the selected TDDs
     mapping (uint256 => string[]) private selectedTDDs;
     
-    event TDDCreated(address indexed key, string indexed url);
+    event TDDCreated(address indexed key, string url);
 
-    event TDDDisabled(address indexed key, string indexed url);
+    event TDDDisabled(address indexed key, string url);
 
-    event TDDEnabled(address indexed key, string indexed url);
+    event TDDEnabled(address indexed key, string url);
 
-    event TDDRetrieval (string indexed url, address indexed owner, bool indexed disabled);
+    event TDDRetrieval (address indexed key, string url, bool disabled);
 
     constructor() { 
     }
@@ -99,13 +99,12 @@ contract DesmoLDHub {
     notEmptyTDDStorager
     onlyTDDOwner 
     returns (TDD memory){
-        emit TDDRetrieval(tddStorager[msg.sender].url, tddStorager[msg.sender].owner, tddStorager[msg.sender].disabled);
+        emit TDDRetrieval(tddStorager[msg.sender].owner, tddStorager[msg.sender].url, tddStorager[msg.sender].disabled);
         return  tddStorager[msg.sender];
     }
 
     function registerTDD(TDD memory tdd)
-    external
-    addressAlreadyInPlace {
+    external{
         if (verifyTDDStorager()){
             if (verifyDisabled()){
                 tddStorager[msg.sender] = tdd;
