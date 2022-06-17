@@ -29,7 +29,7 @@ contract DesmoLDHub {
     //Maping to return the selected TDDs
     mapping (uint256 => string[]) private selectedTDDs;
     
-    event TDDCreated(address indexed key, string url);
+    event TDDCreated(address indexed key, string url, bool disabled);
 
     event TDDDisabled(address indexed key, string url);
 
