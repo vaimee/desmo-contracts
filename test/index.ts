@@ -27,7 +27,7 @@ describe("DESMO-LD contract", function (){
   
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url); 
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled); 
     });
     
     // Should fail to register new TDD?
@@ -48,7 +48,7 @@ describe("DESMO-LD contract", function (){
   
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url); 
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled); 
   
       await expect(
         hub.connect(addr1).registerTDD(TDD2)
@@ -72,11 +72,11 @@ describe("DESMO-LD contract", function (){
       
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
 
       await expect(
         hub.connect(addr2).registerTDD(TDD2)
-      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url);
+      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url, TDD.disabled);
   
       await expect(
         hub.connect(addr1).disableTDD()
@@ -94,7 +94,7 @@ describe("DESMO-LD contract", function (){
   
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
   
       await expect(
         hub.connect(addr2).disableTDD()
@@ -112,7 +112,7 @@ describe("DESMO-LD contract", function (){
   
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
   
       await expect(
         hub.connect(addr1).disableTDD()
@@ -134,7 +134,7 @@ describe("DESMO-LD contract", function (){
 
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
   
       await expect(
         hub.connect(addr1).getTDD()
@@ -161,7 +161,7 @@ describe("DESMO-LD contract", function (){
 
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
   
       await expect(
         hub.connect(addr2).getTDD()
@@ -237,15 +237,15 @@ describe("DESMO-LD contract", function (){
 
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
       
       await expect(
         hub.connect(addr2).registerTDD(TDD2)
-      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url);
+      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url, TDD.disabled);
   
       await expect(
         hub.connect(addr3).registerTDD(TDD3)
-      ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url);
+      ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url, TDD.disabled);
   
       await expect(
         hub.connect(addr1).getNewRequestID()
@@ -287,19 +287,19 @@ describe("DESMO-LD contract", function (){
 
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
 
       await expect(
         hub.connect(addr2).registerTDD(TDD2)
-      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url);
+      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url, TDD.disabled);
   
       await expect(
         hub.connect(addr3).registerTDD(TDD3)
-      ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url);
+      ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url, TDD.disabled);
    
       await expect(
         hub.connect(addr4).registerTDD(TDD4)
-      ).emit(hub, "TDDCreated").withArgs(addr4.address, TDD4.url);
+      ).emit(hub, "TDDCreated").withArgs(addr4.address, TDD4.url, TDD.disabled);
   
       await expect(
         hub.connect(addr1).getNewRequestID.call(1390849295786071768276380950238675083608645509734)
@@ -323,11 +323,11 @@ describe("DESMO-LD contract", function (){
 
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
 
       await expect(
         hub.connect(addr2).registerTDD(TDD2)
-      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url);
+      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url, TDD.disabled);
   
       await expect(
         hub.connect(addr1).getNewRequestID()
@@ -376,23 +376,23 @@ describe("DESMO-LD contract", function (){
 
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
 
       await expect(
         hub.connect(addr2).registerTDD(TDD2)
-      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url);
+      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url, TDD.disabled);
 
       await expect(
         hub.connect(addr3).registerTDD(TDD3)
-      ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url);
+      ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url, TDD.disabled);
   
       await expect(
         hub.connect(addr4).registerTDD(TDD4)
-      ).emit(hub, "TDDCreated").withArgs(addr4.address, TDD4.url);
+      ).emit(hub, "TDDCreated").withArgs(addr4.address, TDD4.url, TDD.disabled);
       
       await expect(
         hub.connect(addr5).registerTDD(TDD5)
-      ).emit(hub, "TDDCreated").withArgs(addr5.address,TDD5.url);
+      ).emit(hub, "TDDCreated").withArgs(addr5.address,TDD5.url, TDD.disabled);
   
       await expect(
         hub.connect(addr1).disableTDD()
@@ -445,23 +445,23 @@ describe("DESMO-LD contract", function (){
   
       await expect(
         hub.connect(addr1).registerTDD(TDD)
-      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url);
+      ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled);
   
       await expect(
         hub.connect(addr2).registerTDD(TDD2)
-      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url);
+      ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url, TDD.disabled);
 
       await expect(
         hub.connect(addr3).registerTDD(TDD3)
-      ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url);
+      ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url, TDD.disabled);
 
       await expect(
         hub.connect(addr4).registerTDD(TDD4)
-      ).emit(hub, "TDDCreated").withArgs(addr4.address, TDD4.url);
+      ).emit(hub, "TDDCreated").withArgs(addr4.address, TDD4.url, TDD.disabled);
 
       await expect(
         hub.connect(addr5).registerTDD(TDD5)
-      ).emit(hub, "TDDCreated").withArgs(addr5.address,TDD5.url);
+      ).emit(hub, "TDDCreated").withArgs(addr5.address,TDD5.url, TDD.disabled);
       
       await expect(
         hub.connect(addr1).disableTDD()

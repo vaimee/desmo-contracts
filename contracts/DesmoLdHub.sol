@@ -108,7 +108,7 @@ contract DesmoLDHub {
         if (verifyTDDStorager()){
             if (verifyDisabled()){
                 tddStorager[msg.sender] = tdd;
-                emit TDDCreated(msg.sender, tdd.url);
+                emit TDDCreated(msg.sender, tdd.url, tdd.disabled);
             }else {
                 revert("Disable the last one");
             }
@@ -116,7 +116,7 @@ contract DesmoLDHub {
             tddStorager[msg.sender] = tdd;
             addressRegisters.push(msg.sender);
              tddStoragerLenght+=1;
-            emit TDDCreated(msg.sender, tdd.url);
+            emit TDDCreated(msg.sender, tdd.url, tdd.disabled);
         }
     }
     
