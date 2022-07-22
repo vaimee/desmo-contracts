@@ -37,6 +37,10 @@ contract DesmoLDHub {
 
     event TDDRetrieval (address indexed key, string url, bool disabled);
 
+    event RequestID (uint256 indexed requestID);
+
+    event TDDSubset (string[] indexed TDDSubset);
+
     constructor() { 
     }
 
@@ -83,8 +87,7 @@ contract DesmoLDHub {
 
     // Function to view the selected subset of TDDs
     function viewSelected(uint256 id)
-    public 
-    view {
+    public  {
         string[] memory tddSubset = getTDDByRequestID(id);
 
         for (uint256 i = 0; i <= tddSubset.length - 1; i++) {
@@ -164,14 +167,15 @@ contract DesmoLDHub {
         }
 
         //console.log("This is the key '%s' \n", key);
+        emit RequestID(key);
         return key;
     }
 
     // Returns a TDD subset
     function getTDDByRequestID(uint256 key) 
     public
-    view
     returns (string[] memory) {
+        emit TDDSubset(selectedTDDs[key]);
         return selectedTDDs[key];
     }
 }
