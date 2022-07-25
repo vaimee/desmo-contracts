@@ -9,6 +9,7 @@ contract DesmoLDHub {
         string url;
         address owner;
         bool disabled;
+        uint256 score;
     }
 
     // Ammount of TDDs to be selected
@@ -29,13 +30,13 @@ contract DesmoLDHub {
     //Maping to return the selected TDDs
     mapping (uint256 => string[]) private selectedTDDs;
     
-    event TDDCreated(address indexed key, string url, bool disabled);
+    event TDDCreated(address indexed key, string url, bool disabled, uint256 score);
 
     event TDDDisabled(address indexed key, string url);
 
     event TDDEnabled(address indexed key, string url);
 
-    event TDDRetrieval (address indexed key, string url, bool disabled);
+    event TDDRetrieval (address indexed key, string url, bool disabled, uint256 score);
 
     event RequestID (uint256 indexed requestID);
 
