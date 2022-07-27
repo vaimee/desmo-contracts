@@ -19,20 +19,35 @@
 //pragma solidity ^0.8.3;
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
-import "./DesmoLDHub.sol";
+import "./DesmoLdHub.sol";
+import "hardhat/console.sol";
 
-contract DesmoLDHubContract {
+contract DesmoLDContract {
 
     mapping (bytes32 => bytes) oracleValue;
+    
+    event QueryResult(bytes32 indexed id, bytes _calldata);
     
     constructor () public {
     }    
 
     function receiveResult(bytes32 id, bytes memory _calldata) public {
+        decodeQueryResult(_calldata);
         oracleValue[id] = _calldata;
+        emit QueryResult(id, _calldata);
     }
 
     function getRaw(bytes32 _oracleId) public view returns(bytes memory bytesValue) {
         return oracleValue[_oracleId];
+    }
+
+    function decodeQueryResult(bytes memory _payload)
+    internal
+    returns (int) {
+        //bytes memory scores =
+         bytes4 sig =
+            _payload[0] | (bytes4(_payload[1]) >> 8);
+        console.logBytes4(sig);
+        return 0;
     }
 }

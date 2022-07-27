@@ -13,7 +13,7 @@ contract DesmoLDHub {
     }
 
     // Ammount of TDDs to be selected
-    uint internal tddSubsetAmmount = 3;
+    uint internal tddSubsetAmmount = 4;
 
     // TDD counter
     uint256 internal tddCounter = 0; 
@@ -31,15 +31,10 @@ contract DesmoLDHub {
     mapping (uint256 => string[]) private selectedTDDs;
     
     event TDDCreated(address indexed key, string url, bool disabled, uint256 score);
-
     event TDDDisabled(address indexed key, string url);
-
     event TDDEnabled(address indexed key, string url);
-
     event TDDRetrieval (address indexed key, string url, bool disabled, uint256 score);
-
     event RequestID (uint256 indexed requestID);
-
     event TDDSubset (string[] indexed TDDSubset);
 
     constructor() { 
@@ -103,7 +98,7 @@ contract DesmoLDHub {
     notEmptyTDDStorager
     onlyTDDOwner 
     returns (TDD memory){
-        emit TDDRetrieval(tddStorager[msg.sender].owner, tddStorager[msg.sender].url, tddStorager[msg.sender].disabled);
+        emit TDDRetrieval(tddStorager[msg.sender].owner, tddStorager[msg.sender].url, tddStorager[msg.sender].disabled, tddStorager[msg.sender].score);
         return  tddStorager[msg.sender];
     }
 
@@ -112,7 +107,7 @@ contract DesmoLDHub {
         if (verifyTDDStorager()){
             if (verifyDisabled()){
                 tddStorager[msg.sender] = tdd;
-                emit TDDCreated(msg.sender, tdd.url, tdd.disabled);
+                emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
             }else {
                 revert("Disable the last one");
             }
@@ -120,7 +115,7 @@ contract DesmoLDHub {
             tddStorager[msg.sender] = tdd;
             addressRegisters.push(msg.sender);
              tddStoragerLenght+=1;
-            emit TDDCreated(msg.sender, tdd.url, tdd.disabled);
+            emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
         }
     }
     
@@ -150,21 +145,22 @@ contract DesmoLDHub {
     notEmptyTDDStorager
     returns (uint256) {    
         uint256 key = uint256(uint160(address(msg.sender)));
+        // uint256 n = 10000000;
+        // uint256 key = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, addressRegisters.length))) % n;
 
         if(tddSubsetAmmount >  tddStoragerLenght) {
             tddSubsetAmmount =  tddStoragerLenght;
         }
 
         delete selectedTDDs[key];
-
-        for (uint256 i = 0; i <= tddSubsetAmmount - 1; i++){
-            if(tddCounter ==  tddStoragerLenght){
+        for (uint256 i = 0; i <= tddSubsetAmmount - 1; i++) {
+            if (tddCounter >= tddStoragerLenght) {
                 tddCounter = 0;
-            } if (tddStorager[addressRegisters[tddCounter]].disabled == true){
-                tddCounter+=1;
+            } 
+            if (tddStorager[addressRegisters[tddCounter]].disabled == false) {
+                selectedTDDs[key].push(tddStorager[addressRegisters[tddCounter]].url);
             }
-            selectedTDDs[key].push(tddStorager[addressRegisters[tddCounter]].url);
-            tddCounter+=1;
+            tddCounter += 1;
         }
 
         //console.log("This is the key '%s' \n", key);
@@ -179,4 +175,11 @@ contract DesmoLDHub {
         emit TDDSubset(selectedTDDs[key]);
         return selectedTDDs[key];
     }
+
+    // function updateScores(uint256 key, uint[] memory scores)
+    // internal {
+    //     selectedTDDs[key]
+    //     for (uint256 i = 0; i <= scores.length - 1; i++){
+    //     }
+    // }
 }
