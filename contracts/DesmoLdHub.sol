@@ -12,50 +12,50 @@ contract DesmoLDHub {
         uint256 score;
     }
 
-    // Ammount of TDDs to be selected
-    uint internal tddSubsetAmmount = 4;
+    // Size of the TDD lists to be selected
+    uint256 internal tddSubsetSize = 4;
 
     // TDD counter
     uint256 internal tddCounter = 0; 
 
-    //register of all addresses registered; 
-    address[] private addressRegisters;
+    // List of all registered addresses
+    address[] private registeredAddresses;
 
     // TDD index counter
-    uint256 private tddStoragerLenght = 0;
+    uint256 private tddStoragerLength = 0;
         
     // TDDs storager
-    mapping(address => TDD) private tddStorager;
+    mapping (address => TDD) private tddStorager;
 
-    //Maping to return the selected TDDs
+    // Mapping to return the selected TDDs
     mapping (uint256 => string[]) private selectedTDDs;
     
-    event TDDCreated(address indexed key, string url, bool disabled, uint256 score);
-    event TDDDisabled(address indexed key, string url);
-    event TDDEnabled(address indexed key, string url);
+    event TDDCreated (address indexed key, string url, bool disabled, uint256 score);
+    event TDDDisabled (address indexed key, string url);
+    event TDDEnabled (address indexed key, string url);
     event TDDRetrieval (address indexed key, string url, bool disabled, uint256 score);
-    event RequestID (uint256 indexed requestID);
-    event TDDSubset (string[] indexed TDDSubset);
+    event RequestID (uint256 requestID);
+    event TDDSubset (uint256 indexed key, string[] TDDSubset);
 
     constructor() { 
     }
 
-    // Modifier to check if address its already on the tddStorager
+    // Modifier to check if the address is already used in the tddStorager
     modifier addressAlreadyInPlace() {
-        require( !verifyTDDStorager(), "Sender already stored a value.");
+        require(!verifyTDDStorager(), "Sender already stored a value.");
         _;
     }
     
 
-    // Modifier to check the msg.address == TDD owner
+    // Modifier to check that msg.address == TDD owner
     modifier onlyTDDOwner() {
         require(msg.sender == tddStorager[msg.sender].owner, "Not the TDD owner.");
         _;
     }   
 
-    // Modifier to ensure the retrival of a subset of TDDs > 0
+    // Modifier to ensure the retrieval of a subset of TDDs > 0
     modifier notEmptyTDDStorager () {
-        require( tddStoragerLenght > 0, "No TDD available. ");
+        require(tddStoragerLength > 0, "No TDD available.");
         _;
     }
 
@@ -69,17 +69,6 @@ contract DesmoLDHub {
             return false;
         }
     }
-    
-    function verifyDisabled ()
-    internal
-    view 
-    returns (bool) {
-        if (tddStorager[msg.sender].disabled == true){
-            return true;
-        }else {
-            return false;
-        }
-    }
 
     // Function to view the selected subset of TDDs
     function viewSelected(uint256 id)
@@ -88,7 +77,7 @@ contract DesmoLDHub {
 
         for (uint256 i = 0; i <= tddSubset.length - 1; i++) {
             string memory s = tddSubset[i];
-            console.log("TDD at position '%d' is '%s' ", i, s); 
+            console.log("TDD at position '%d' is '%s'.", i, s); 
         }
         console.log("\n");
     }
@@ -99,13 +88,13 @@ contract DesmoLDHub {
     onlyTDDOwner 
     returns (TDD memory){
         emit TDDRetrieval(tddStorager[msg.sender].owner, tddStorager[msg.sender].url, tddStorager[msg.sender].disabled, tddStorager[msg.sender].score);
-        return  tddStorager[msg.sender];
+        return tddStorager[msg.sender];
     }
 
     function registerTDD(TDD memory tdd)
     external{
         if (verifyTDDStorager()){
-            if (verifyDisabled()){
+            if (tddStorager[msg.sender].disabled == true){
                 tddStorager[msg.sender] = tdd;
                 emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
             }else {
@@ -113,8 +102,8 @@ contract DesmoLDHub {
             }
         }else{
             tddStorager[msg.sender] = tdd;
-            addressRegisters.push(msg.sender);
-             tddStoragerLenght+=1;
+            tddStoragerLength += 1;
+            registeredAddresses.push(msg.sender);
             emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
         }
     }
@@ -124,46 +113,46 @@ contract DesmoLDHub {
         if(verifyTDDStorager()){
             tddStorager[msg.sender].disabled = true;
             emit TDDDisabled(msg.sender, tddStorager[msg.sender].url);
-        }else {
+        } else {
             revert("Not the TDD owner.");
         }
     }
 
     function enableTDD()
     external{
-        if(verifyDisabled()){
+        if (tddStorager[msg.sender].disabled == true){
             tddStorager[msg.sender].disabled = false;
             emit TDDEnabled(msg.sender, tddStorager[msg.sender].url);
-        }else{
+        } else {
             revert("No TDD owner or No TDD to enable.");
         }
     }
     
-    // Return the ID of the selected TDDs subset
+    // Return the ID of the selected TDD subset
     function getNewRequestID() 
     external
     notEmptyTDDStorager
     returns (uint256) {    
         uint256 key = uint256(uint160(address(msg.sender)));
         // uint256 n = 10000000;
-        // uint256 key = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, addressRegisters.length))) % n;
+        // uint256 key = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, registeredAddresses.length))) % n;
 
-        if(tddSubsetAmmount >  tddStoragerLenght) {
-            tddSubsetAmmount =  tddStoragerLenght;
+        if(tddSubsetSize >  tddStoragerLength) {
+            tddSubsetSize =  tddStoragerLength;
         }
 
         delete selectedTDDs[key];
-        for (uint256 i = 0; i <= tddSubsetAmmount - 1; i++) {
-            if (tddCounter >= tddStoragerLenght) {
+        for (uint256 i = 0; i <= tddSubsetSize - 1; i++) {
+            if (tddCounter >= tddStoragerLength) {
                 tddCounter = 0;
             } 
-            if (tddStorager[addressRegisters[tddCounter]].disabled == false) {
-                selectedTDDs[key].push(tddStorager[addressRegisters[tddCounter]].url);
+            if (tddStorager[registeredAddresses[tddCounter]].disabled == false) {
+                selectedTDDs[key].push(tddStorager[registeredAddresses[tddCounter]].url);
             }
             tddCounter += 1;
         }
 
-        //console.log("This is the key '%s' \n", key);
+        // console.log("This is the key '%s'.", key);
         emit RequestID(key);
         return key;
     }
@@ -172,7 +161,7 @@ contract DesmoLDHub {
     function getTDDByRequestID(uint256 key) 
     public
     returns (string[] memory) {
-        emit TDDSubset(selectedTDDs[key]);
+        emit TDDSubset(key, selectedTDDs[key]);
         return selectedTDDs[key];
     }
 
