@@ -1,38 +1,24 @@
-// // SPDX-License-Identifier: Apache-2.0
-
-// /******************************************************************************
-//  * Copyright 2021 IEXEC BLOCKCHAIN TECH                                       *
-//  *                                                                            *
-//  * Licensed under the Apache License, Version 2.0 (the "License");            *
-//  * you may not use this file except in compliance with the License.           *
-//  * You may obtain a copy of the License at                                    *
-//  *                                                                            *
-//  *     http://www.apache.org/licenses/LICENSE-2.0                             *
-//  *                                                                            *
-//  * Unless required by applicable law or agreed to in writing, software        *
-//  * distributed under the License is distributed on an "AS IS" BASIS,          *
-//  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
-//  * See the License for the specific language governing permissions and        *
-//  * limitations under the License.                                             *
-//  ******************************************************************************/
-
-//pragma solidity ^0.8.3;
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.3;
 pragma experimental ABIEncoderV2;
-import "./DesmoLdHub.sol";
+import "./DesmoLDHub.sol";
 import "hardhat/console.sol";
 
 contract DesmoLDContract {
+    mapping (bytes32 => bytes) private oracleValue;
+    mapping (bytes => bytes) private scoreStorager;
 
-    mapping (bytes32 => bytes) oracleValue;
-    
+
+    address internal constant desmoHubAddress = 0x21C021c9209A234b9dd2758ea34259B69D7d0a77;
+    DesmoLDHub public desmoHub;
+
     event QueryResult(bytes32 indexed id, bytes _calldata);
     
     constructor () public {
+        desmoHub = DesmoLDHub(desmoHubAddress);
     }    
 
     function receiveResult(bytes32 id, bytes memory _calldata) public {
-        decodeQueryResult(_calldata);
+        processQueryResult(_calldata);
         oracleValue[id] = _calldata;
         emit QueryResult(id, _calldata);
     }
@@ -41,13 +27,31 @@ contract DesmoLDContract {
         return oracleValue[_oracleId];
     }
 
-    function decodeQueryResult(bytes memory _payload)
-    internal
-    returns (int) {
-        //bytes memory scores =
-         bytes4 sig =
-            _payload[0] | (bytes4(_payload[1]) >> 8);
-        console.logBytes4(sig);
-        return 0;
+    function processQueryResult(bytes memory _payload)
+    internal{
+        uint256 tddSubsetRequestIDLenght;
+        uint256 scoreAmount; 
+        bytes memory requestID;
+        bytes memory scores;
+        
+        tddSubsetRequestIDLenght = uint8(bytes1(_payload[0]));
+        scoreAmount = uint8(bytes1(_payload[tddSubsetRequestIDLenght+1]));
+
+        for (uint256 i = 1; i <= tddSubsetRequestIDLenght; i++){
+            requestID = abi.encodePacked(requestID, _payload[i]);
+        }
+        for (uint256 j = tddSubsetRequestIDLenght+2; j <= tddSubsetRequestIDLenght+1+scoreAmount; j++){
+            scores = abi.encodePacked(scores, _payload[j]);
+        } 
+        scoreStorager[requestID] = scores;
+
+        desmoHub.updateScores(requestID, scores);
+    }
+
+    function viewScores(bytes memory requestID)
+    public
+    view
+    returns(bytes memory){
+        return scoreStorager[requestID];
     }
 }
