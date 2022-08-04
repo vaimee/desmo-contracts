@@ -7,7 +7,6 @@ contract DesmoLDContract {
     mapping (bytes32 => bytes) private oracleValue;
     mapping (bytes => bytes) private scoreStorager;
 
-
     DesmoLDHub public desmoHub;
 
     event QueryResult(bytes32 indexed id, bytes _calldata);
@@ -43,7 +42,6 @@ contract DesmoLDContract {
             scores = abi.encodePacked(scores, _payload[j]);
         } 
         scoreStorager[requestID] = scores;
-
         desmoHub.updateScores(requestID, scores);
     }
 

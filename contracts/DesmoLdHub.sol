@@ -179,20 +179,20 @@ contract DesmoLDHub {
     notEmptyTDDStorage
     returns (bytes memory) {    
         bytes memory key = abi.encodePacked(requestIdCounter);
+        uint256 currentSelectionSize = tddSelectionSize;
 
-        if(tddSelectionSize >  tddStorageLength) {
-            tddSelectionSize =  tddStorageLength;
+        if(currentSelectionSize > tddStorageLength) {
+            currentSelectionSize = tddStorageLength;
         }
 
-        delete selectedTDDs[key];
-
-        for (uint256 i = 0; i <= tddSelectionSize - 1; i++) {
+        for (uint256 i = 0; i <= currentSelectionSize - 1; i++) {
             if (tddCounter >= tddStorageLength) {
                 tddCounter = 0;
             } 
             if (tddStorage[registeredAddresses[tddCounter]].disabled == false) {
                 selectedTDDs[key].push(tddStorage[registeredAddresses[tddCounter]].url);
             }
+            
             tddCounter += 1;
         }
         requestIdCounter += 1;
