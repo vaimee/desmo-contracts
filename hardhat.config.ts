@@ -33,7 +33,7 @@ task(
       await desmoHub.registerTDD(url, {
         from: account.address,
       });
-      console.log("Registred", url);
+      console.log("Registered", url);
     }
   }
 ).addParam("desmoHubAddress", "the address of the desmo-ld hub");
