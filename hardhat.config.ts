@@ -19,14 +19,47 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
+task(
+  "registerTDDs",
+  "register the example desmo-ld TDDs",
+  async (taskArgs: { desmoHubAddress: string }, hre) => {
+    const accounts = await hre.ethers.getSigners();
+
+    for (let i = 0; i < 4; i++) {
+      const account = accounts[i];
+      const desmoLDContract = await hre.ethers.getContractFactory("DesmoLDHub");
+      const desmoHub = await desmoLDContract.attach(taskArgs.desmoHubAddress);
+      const url = `https://desmold-zion-${i + 1}.vaimee.it`;
+      await desmoHub.registerTDD(url, {
+        from: account.address,
+      });
+      console.log("Registred", url);
+    }
+  }
+).addParam("desmoHubAddress", "the address of the desmo-ld hub");
+
+task(
+  "listTDDs",
+  "list all the TDDs in desmo-ld",
+  async (taskArgs: { desmoHubAddress: string }, hre) => {
+    const desmoLDContract = await hre.ethers.getContractFactory("DesmoLDHub");
+    const desmoHub = await desmoLDContract.attach(taskArgs.desmoHubAddress);
+    const tdds = await desmoHub.getTDDStorageLength();
+    const myTDDs = await desmoHub.getTDD();
+
+    console.log("Number of TDDs:", tdds);
+    console.log("Your TDD:", myTDDs);
+  }
+).addParam("desmoHubAddress", "the address of the desmo-ld hub");
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
   solidity: "0.8.4",
   networks: {
-    ropsten: {
-      url: process.env.ROPSTEN_URL || "",
+    viviani: {
+      url: "https://viviani.iex.ec",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },

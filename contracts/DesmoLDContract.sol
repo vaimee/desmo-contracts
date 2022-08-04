@@ -1,6 +1,6 @@
 pragma solidity ^0.8.3;
 pragma experimental ABIEncoderV2;
-import "./DesmoLDHub.sol";
+import "./DesmoLdHub.sol";
 import "hardhat/console.sol";
 
 contract DesmoLDContract {
@@ -8,12 +8,11 @@ contract DesmoLDContract {
     mapping (bytes => bytes) private scoreStorager;
 
 
-    address internal constant desmoHubAddress = 0x21C021c9209A234b9dd2758ea34259B69D7d0a77;
     DesmoLDHub public desmoHub;
 
     event QueryResult(bytes32 indexed id, bytes _calldata);
     
-    constructor () public {
+    constructor (address desmoHubAddress){
         desmoHub = DesmoLDHub(desmoHubAddress);
     }    
 

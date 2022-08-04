@@ -4,11 +4,17 @@ import "hardhat/console.sol";
 
 contract DesmoLDHub {
     
-    // TDD struct
+    /**
+     * Internal structure for storing Thing Description Directories.
+     */
     struct TDD {
+        // The address of the TDD
         string url;
+        // The address of the owner of the TDD
         address owner;
+        // TDDs can be disabled but not deleted
         bool disabled;
+        // Quality score about the TDD, calculated by the protocol
         uint256 score;
     }
 
@@ -16,202 +22,193 @@ contract DesmoLDHub {
     uint256 internal tddSelectionSize = 4;
     uint256 internal tddCounter = 0; 
     address[] private registeredAddresses;
-    uint256 private tddStoragerLength = 0;
+    uint256 private tddStorageLength = 0;
+
+    // Request ID counter
+    uint256 internal requestIdCounter = 0;
         
-    // TDDs storager
-    mapping (address => TDD) private tddStorager;
+    // TDDs Storage
+    mapping (address => TDD) private tddStorage;
     mapping (string => TDD) private tddBucket;
     mapping (bytes => string[]) private selectedTDDs;
-    mapping (bytes => bytes) private scoreStorager;
+    mapping (bytes => bytes) private scoreStorage;
 
     event TDDCreated (address indexed key, string url, bool disabled, uint256 score);
     event TDDDisabled (address indexed key, string url);
     event TDDEnabled (address indexed key, string url);
-    event TDDRetrieval (address indexed key, string url, bool disabled, uint256 score);
     event RequestID (bytes requestID);
-    event TDDSubset (bytes indexed key, string[] TDDSubset);
 
     constructor() { 
     }
 
-    // Modifier to check if the address is already used in the tddStorager
+    // Modifier to check if the address is already used in the tddStorage
     modifier addressAlreadyInPlace() {
-        require(!tddAlreadyInStorager(), "Sender already stored a value.");
+        require(!tddAlreadyInStorage(), "Sender already stored a value.");
         _;
     }
     
 
     // Modifier to check that msg.address == TDD owner
     modifier onlyTDDOwner() {
-        require(msg.sender == tddStorager[msg.sender].owner, "Not the TDD owner.");
+        require(msg.sender == tddStorage[msg.sender].owner, "Not the TDD owner.");
         _;
     }   
 
     // Modifier to ensure the retrieval of a subset of TDDs > 0
-    modifier notEmptyTDDStorager () {
-        require(tddStoragerLength > 0, "No TDD available.");
+    modifier notEmptyTDDStorage () {
+        require(tddStorageLength > 0, "No TDD available.");
         _;
     }
 
-    function tddAlreadyInStorager ()
+    /**
+     * @dev Verify if you have already a TDD registered in the system.
+     */
+    function tddAlreadyInStorage ()
     internal
     view 
     returns (bool) {
-        if (bytes(tddStorager[msg.sender].url).length > 0){
+        if (bytes(tddStorage[msg.sender].url).length > 0){
             return true;
         }else {
             return false;
         }
     }
-
-    // Function to view the selected subset of TDDs
-    function viewSelected(bytes memory id)
-    public  {
-        string[] memory tddSubset = getTDDByRequestID(id);
-
-        for (uint256 i = 0; i <= tddSubset.length - 1; i++) {
-            string memory tdd = tddSubset[i];
-            console.log("TDD at position '%d' is '%s'.", i, tdd); 
-            console.log("The Score of the TDD at position '%d' is '%d'.", i, tddStorager[tddBucket[tdd].owner].score); 
-        }
-        console.log("\n");
+    
+    /**
+    * @dev How many TDDs are registered in the system.
+    */
+    function getTDDStorageLength()
+    public
+    view
+    returns(uint256){
+        return tddStorageLength;
     }
 
+    /**
+    * @dev Return the list of scores related to RequestID 
+    */
+    function getScoresByRequestID(bytes memory requestID) 
+    public 
+    view 
+    returns (bytes memory){
+        return scoreStorage[requestID];
+    }
+
+    /**
+    * @dev Every request has a unique set of TDDs. 
+    *      This function returns the list of TDDs related to a request.
+    */
+    function getTDDByRequestID(bytes memory requestID) 
+    public
+    view
+    returns (string[] memory) {
+        return selectedTDDs[requestID];
+    }
+
+    /**
+    * @dev Returns the TDD owned by the message sender.
+    */
     function getTDD()
     external
-    notEmptyTDDStorager
+    notEmptyTDDStorage
     onlyTDDOwner
+    view
     returns (TDD memory){
-        emit TDDRetrieval(tddStorager[msg.sender].owner, tddStorager[msg.sender].url, tddStorager[msg.sender].disabled, tddStorager[msg.sender].score);
-        return tddStorager[msg.sender];
+        return tddStorage[msg.sender];
     }
 
-    function registerTDD(TDD memory tdd)
-    external{
-        if (tddAlreadyInStorager()){
-            if (tddStorager[msg.sender].disabled == true){
-                tddStorager[msg.sender] = tdd;
-                tddBucket[tdd.url] = tdd;
-                emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
-            } else {
-                revert("Disable the last one");
-            }
-        }else{
-            tddStorager[msg.sender] = tdd;
-            tddStoragerLength += 1;
-            registeredAddresses.push(msg.sender);
-            tddBucket[tdd.url] = tdd;
-            emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
-        }
-    }
-
-    function registerTDDExplicitParam(string memory url)
+    /**
+    * @dev Register a new Thing Description Directory in the system for the message sender.
+    *      If the TDD is already registered and enabled, the transaction is rejected. 
+    *      You can register a new TDD if the previous one is disabled.
+    * @param url The address of the TDD.
+    */
+    function registerTDD(string memory url)
     external{
         TDD memory tdd = TDD(url, msg.sender, false, 0);
-        if (tddAlreadyInStorager()){
-            if (tddStorager[msg.sender].disabled == true){
-                tddStorager[msg.sender] = tdd;
+        if (tddAlreadyInStorage()){
+            if (tddStorage[msg.sender].disabled == true){
+                tddStorage[msg.sender] = tdd;
                 tddBucket[tdd.url] = tdd;
                 emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
             } else {
                 revert("Disable the last one");
             }
         }else{
-            tddStorager[msg.sender] = tdd;
-            tddStoragerLength += 1;
+            tddStorage[msg.sender] = tdd;
+            tddStorageLength += 1;
             registeredAddresses.push(msg.sender);
             tddBucket[tdd.url] = tdd;
             emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
         }
     }
-    
+    /**
+    * @dev Disable the Thing Description Directory of the message sender.
+    */
     function disableTDD()
     external{
-        if(tddAlreadyInStorager()){
-            tddStorager[msg.sender].disabled = true;
-            delete tddBucket[tddStorager[msg.sender].url];
-            emit TDDDisabled(msg.sender, tddStorager[msg.sender].url);
+        if(tddAlreadyInStorage()){
+            tddStorage[msg.sender].disabled = true;
+            delete tddBucket[tddStorage[msg.sender].url];
+            emit TDDDisabled(msg.sender, tddStorage[msg.sender].url);
         } else {
             revert("Not the TDD owner.");
         }
     }
-
+    
+    /**
+    * @dev Enable the Thing Description Directory of the message sender.
+    */
     function enableTDD()
     external{
-        if (tddStorager[msg.sender].disabled == true){
-            tddStorager[msg.sender].disabled = false;
-            tddBucket[tddStorager[msg.sender].url] = tddStorager[msg.sender];
-            emit TDDEnabled(msg.sender, tddStorager[msg.sender].url);
+        if (tddStorage[msg.sender].disabled == true){
+            tddStorage[msg.sender].disabled = false;
+            tddBucket[tddStorage[msg.sender].url] = tddStorage[msg.sender];
+            emit TDDEnabled(msg.sender, tddStorage[msg.sender].url);
         } else {
             revert("No TDD owner or No TDD to enable.");
         }
     }
     
-    // Return the ID of the selected TDD subset
+    /**
+    * @dev Generate a new Request selecting a subset of TDDs. The ID can be later used to retrieve the list of selected TDDs.
+           The generated request ID is emitted as an event.
+    */
     function getNewRequestID() 
     external
-    notEmptyTDDStorager
+    notEmptyTDDStorage
     returns (bytes memory) {    
-        bytes memory key = abi.encodePacked(keccak256(abi.encodePacked(uint160(address(msg.sender)))));
+        bytes memory key = abi.encodePacked(requestIdCounter);
 
-        if(tddSelectionSize >  tddStoragerLength) {
-            tddSelectionSize =  tddStoragerLength;
+        if(tddSelectionSize >  tddStorageLength) {
+            tddSelectionSize =  tddStorageLength;
         }
 
         delete selectedTDDs[key];
 
         for (uint256 i = 0; i <= tddSelectionSize - 1; i++) {
-            if (tddCounter >= tddStoragerLength) {
+            if (tddCounter >= tddStorageLength) {
                 tddCounter = 0;
             } 
-            if (tddStorager[registeredAddresses[tddCounter]].disabled == false) {
-                selectedTDDs[key].push(tddStorager[registeredAddresses[tddCounter]].url);
+            if (tddStorage[registeredAddresses[tddCounter]].disabled == false) {
+                selectedTDDs[key].push(tddStorage[registeredAddresses[tddCounter]].url);
             }
             tddCounter += 1;
         }
-
-        //console.logBytes(key);
+        requestIdCounter += 1;
         emit RequestID(key);
         return key;
-    }
-
-    // Returns a TDD subset
-    function getTDDByRequestID(bytes memory requestID) 
-    public
-    returns (string[] memory) {
-        emit TDDSubset(requestID, selectedTDDs[requestID]);
-        return selectedTDDs[requestID];
-    }
-    
-    function getTDDByRequestIDWithView(bytes memory requestID) 
-    public
-    view
-    returns (string[] memory) {
-        return selectedTDDs[requestID];
     }
 
     function updateScores(bytes memory requestID, bytes memory scores)
     public {
         string[] memory tdds = selectedTDDs[requestID];
-        scoreStorager[requestID] = scores;
+        scoreStorage[requestID] = scores;
 
         for (uint256 i = 0; i <= tdds.length - 1; i++){
-            TDD storage tdd = tddStorager[tddBucket[tdds[i]].owner];
+            TDD storage tdd = tddStorage[tddBucket[tdds[i]].owner];
             tdd.score = tdd.score + uint8(bytes1(scores[i]));
         }
     }
 
-    function getTDDStoragerLenght()
-    public
-    view
-    returns(uint256){
-        return tddStoragerLength;
-    }
-
-    function getScoresByRequestID(bytes memory requestID) 
-    public 
-    view 
-    returns (bytes memory){
-        return scoreStorager[requestID];
-    }
 }
