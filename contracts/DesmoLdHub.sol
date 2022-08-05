@@ -189,10 +189,12 @@ contract DesmoLDHub {
             if (tddCounter >= tddStorageLength) {
                 tddCounter = 0;
             } 
-            if (tddStorage[registeredAddresses[tddCounter]].disabled == false) {
+            if (tddStorage[registeredAddresses[tddCounter]].disabled != false) {
+                currentSelectionSize += 1;
+            }else{
                 selectedTDDs[key].push(tddStorage[registeredAddresses[tddCounter]].url);
             }
-            
+
             tddCounter += 1;
         }
         requestIdCounter += 1;
@@ -210,5 +212,4 @@ contract DesmoLDHub {
             tdd.score = tdd.score + uint8(bytes1(scores[i]));
         }
     }
-
 }
