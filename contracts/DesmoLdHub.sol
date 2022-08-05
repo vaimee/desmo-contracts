@@ -185,21 +185,19 @@ contract DesmoLDHub {
             currentSelectionSize = tddStorageLength;
         }
 
-        for (uint256 i = 0; i <= currentSelectionSize - 1; i++) {
-            if (tddCounter >= tddStorageLength) {
-                tddCounter = 0;
-            } 
-            if (tddStorage[registeredAddresses[tddCounter]].disabled != false) {
-                currentSelectionSize += 1;
-            }else{
-                selectedTDDs[key].push(tddStorage[registeredAddresses[tddCounter]].url);
+        for(uint256 i = 0; i < tddStorageLength; i++) {
+            if(tddStorage[registeredAddresses[i]].disabled == false) {
+                selectedTDDs[key].push(tddStorage[registeredAddresses[i]].url);
+                currentSelectionSize -= 1;
             }
 
-            tddCounter += 1;
-        }
-        requestIdCounter += 1;
-        emit RequestID(key);
-        return key;
+            if(currentSelectionSize == 0) {
+                requestIdCounter += 1;
+                emit RequestID(key);
+                return key;
+            }
+        }        
+        revert("Too few TDD registered");
     }
 
     function updateScores(bytes memory requestID, bytes memory scores)

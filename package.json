@@ -4,6 +4,7 @@
     "build": "hardhat compile",
     "deploy:init": "hardhat --network viviani registerTDDs",
     "deploy": "hardhat run --network viviani scripts/deploy.ts",
+    "test": "hardhat test",
     "lint": "eslint . --fix"
   },
   "devDependencies": {
