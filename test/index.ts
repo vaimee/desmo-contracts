@@ -560,6 +560,7 @@ describe("DESMO Contracts tests", function () {
           const a = await hub
             .connect(addr1)
             .getTDDByRequestID(requestID.requestID);
+          console.log(a);  
           expect(a).to.have.members([
             "https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
             "https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
@@ -582,6 +583,7 @@ describe("DESMO Contracts tests", function () {
           const b = await hub
             .connect(addr2)
             .getTDDByRequestID(requestID2.requestID);
+          console.log(b);  
           expect(b).to.have.members([
             "https://www.brenno.com.br/2019/wot/tdd/v1/TDD:005",
             "https://www.brenno.com.br/2019/wot/tdd/v1/TDD:006",
@@ -667,7 +669,6 @@ describe("DESMO Contracts tests", function () {
 
         const resquestId1 = await hub.connect(addr1).getNewRequestID();
         const awaitRequestID1 = await resquestId1.wait();
-
         const awaitRequestID1EventName = awaitRequestID1.events?.find(
           (event) => {
             return event.event === "RequestID";
@@ -680,6 +681,7 @@ describe("DESMO Contracts tests", function () {
           const a = await hub
             .connect(addr1)
             .getTDDByRequestID(requestID.requestID);
+            console.log(a);
           expect(a).to.have.members([
             "https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
             "https://www.brenno.com.br/2019/wot/tdd/v1/TDD:003",
@@ -702,6 +704,7 @@ describe("DESMO Contracts tests", function () {
           const b = await hub
             .connect(addr2)
             .getTDDByRequestID(requestID2.requestID);
+            console.log(b);
           expect(b).to.have.members([
             "https://www.brenno.com.br/2019/wot/tdd/v1/TDD:006",
             "https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
