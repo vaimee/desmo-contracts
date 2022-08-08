@@ -73,6 +73,31 @@ task(
   }
 ).addParam("desmoHubAddress", "the address of the desmo-ld hub");
 
+task(
+  "receiveResult",
+  "receive a result",
+  async (taskArgs: { desmoContractAddress: string; taskId: string }, hre) => {
+    const desmoLDContract = await hre.ethers.getContractFactory(
+      "DesmoLDContract"
+    );
+    const desmoContract = await desmoLDContract.attach(
+      taskArgs.desmoContractAddress
+    );
+
+    const tx = await desmoContract.receiveResult(taskArgs.taskId, []);
+    const txData = await tx.wait();
+
+    const event = txData.events?.find((event) => {
+      return event.event === "QueryResult";
+    });
+
+    const result = event?.args;
+    console.log(result);
+  }
+)
+  .addParam("desmoContractAddress", "the address of the desmo-ld contract")
+  .addParam("taskId", "the id of the task");
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
