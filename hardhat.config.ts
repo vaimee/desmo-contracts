@@ -42,13 +42,34 @@ task(
   "listTDDs",
   "list all the TDDs in desmo-ld",
   async (taskArgs: { desmoHubAddress: string }, hre) => {
-    const desmoLDContract = await hre.ethers.getContractFactory("DesmoLDHub");
-    const desmoHub = await desmoLDContract.attach(taskArgs.desmoHubAddress);
+    const desmoLDHubContract = await hre.ethers.getContractFactory(
+      "DesmoLDHub"
+    );
+    const desmoHub = await desmoLDHubContract.attach(taskArgs.desmoHubAddress);
     const tdds = await desmoHub.getTDDStorageLength();
-    const myTDDs = await desmoHub.getTDD();
 
     console.log("Number of TDDs:", tdds);
-    console.log("Your TDD:", myTDDs);
+  }
+).addParam("desmoHubAddress", "the address of the desmo-ld hub");
+
+task(
+  "generateRequestId",
+  "generate a request id",
+  async (taskArgs: { desmoHubAddress: string }, hre) => {
+    const desmoLDHubContract = await hre.ethers.getContractFactory(
+      "DesmoLDHub"
+    );
+    const desmoHub = await desmoLDHubContract.attach(taskArgs.desmoHubAddress);
+
+    const tx = await desmoHub.getNewRequestID();
+    const txData = await tx.wait();
+
+    const event = txData.events?.find((event) => {
+      return event.event === "RequestID";
+    });
+
+    const id = event?.args;
+    console.log("Your request id:", id);
   }
 ).addParam("desmoHubAddress", "the address of the desmo-ld hub");
 
