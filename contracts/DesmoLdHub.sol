@@ -186,17 +186,11 @@ contract DesmoLDHub {
         }
 
         for(uint256 i = 0; i < tddStorageLength; i++) {
-            if (tddCounter >= tddStorageLength) {
-                tddCounter = 0;
-            } 
-
-            if(tddStorage[registeredAddresses[tddCounter]].disabled == false) {            
-                selectedTDDs[key].push(tddStorage[registeredAddresses[tddCounter]].url);
+            if(tddStorage[registeredAddresses[i]].disabled == false) {
+                selectedTDDs[key].push(tddStorage[registeredAddresses[i]].url);
                 currentSelectionSize -= 1;
             }
 
-            tddCounter += 1;
-            
             if(currentSelectionSize == 0) {
                 requestIdCounter += 1;
                 emit RequestID(key);
