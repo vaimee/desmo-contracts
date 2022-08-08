@@ -1,6 +1,7 @@
-pragma solidity ^0.8.0;
-
+pragma solidity ^0.6.0;
+pragma experimental ABIEncoderV2;
 import "hardhat/console.sol";
+
 
 contract DesmoLDHub {
     
@@ -38,7 +39,7 @@ contract DesmoLDHub {
     event TDDEnabled (address indexed key, string url);
     event RequestID (bytes requestID);
 
-    constructor() { 
+    constructor() public{ 
     }
 
     // Modifier to check if the address is already used in the tddStorage

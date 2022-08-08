@@ -8,8 +8,8 @@ The Desmo-LD iExecDOracle is a Smart contract that implements the IExec INTERFAC
 ## Deployement
 | Contract  | Address  | 
 |---|---|
-| Desmo-LD-Hub  | `0x0124C0f3207C4879d72B3D9e24f480fF58C32CA4`  |
-| Desmo-LD-Contract | `0x833B43976bdB19C60525F214AC707b044e17cAA2`  |
+| Desmo-LD-Hub  | `0xb2766acEFFC0Ba82Ee921e34156C950B07e8760B`  |
+| Desmo-LD-Contract | `0xCe33c8EC9d418bB1e1095bB4C6d99834C7996BF0`  |
 ## Description
 This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
 

@@ -1,9 +1,12 @@
-pragma solidity ^0.8.3;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 import "./DesmoLdHub.sol";
+import "@iexec/doracle/contracts/IexecDoracle.sol"; 
+import "@iexec/solidity/contracts/ERC1154/IERC1154.sol";
+import "@iexec/solidity/contracts/ERC2362/IERC2362.sol";
 import "hardhat/console.sol";
 
-contract DesmoLDContract {
+contract DesmoLDContract is IexecDoracle, IOracleConsumer{
     mapping (bytes32 => bytes) private oracleValue;
     mapping (bytes => bytes) private scoreStorager;
 
@@ -11,14 +14,15 @@ contract DesmoLDContract {
 
     event QueryResult(bytes32 indexed id, bytes _calldata);
     
-    constructor (address desmoHubAddress){
+    constructor (address desmoHubAddress) public IexecDoracle(0x0000000000000000000000000000000000000000) {
         desmoHub = DesmoLDHub(desmoHubAddress);
     }    
 
-    function receiveResult(bytes32 id, bytes memory _calldata) public {
+    function receiveResult(bytes32 id, bytes memory _calldata) external override {
         processQueryResult(_calldata);
-        oracleValue[id] = _calldata;
-        emit QueryResult(id, _calldata);
+        bytes memory results = _iexecDoracleGetVerifiedResult(id);
+        oracleValue[id] = results;
+        emit QueryResult(id, results);
     }
 
     function getRaw(bytes32 _oracleId) public view returns(bytes memory bytesValue) {
