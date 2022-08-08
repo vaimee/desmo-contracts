@@ -84,7 +84,11 @@ task(
       taskArgs.desmoContractAddress
     );
 
-    const tx = await desmoContract.receiveResult(taskArgs.taskId, []);
+    const tx = await desmoContract.receiveResult(
+      taskArgs.taskId,
+      "0x2000000000000000000000000000000000000000000000000000000000000000050402020202001115"
+    );
+
     const txData = await tx.wait();
 
     const event = txData.events?.find((event) => {
