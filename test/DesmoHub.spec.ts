@@ -1,23 +1,20 @@
-import { Provider } from "@ethersproject/abstract-provider";
 import { expect } from "chai";
-import { Console } from "console";
-import { Signer } from "ethers";
 import { ethers } from "hardhat";
-import { DesmoLDHub, DesmoLDContract } from "../typechain";
+import { DesmoHub } from "../typechain";
 
 describe("DESMO Contracts tests", function () {
   describe("DESMO-LD HUB contract tests", function () {
-    let hub: DesmoLDHub;
+    let hub: DesmoHub;
 
     beforeEach(async function () {
-      const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
+      const DESMOHUB = await ethers.getContractFactory("DesmoHub");
       hub = await DESMOHUB.deploy();
       await hub.deployed();
     });
 
     describe("DESMO-LD HUB - Units tests", async function () {
       it("Should register new TDD", async function () {
-        const [addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
+        const [addr1] = await ethers.getSigners();
 
         const TDD = {
           url: "https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -176,7 +173,7 @@ describe("DESMO Contracts tests", function () {
 
     describe("DESMO-LD HUB - Transactions tests", function () {
       it("Should return a key to retrieve the TDD subset", async function () {
-        const [addr1, addr2, addr3] = await ethers.getSigners();
+        const [addr1, addr2] = await ethers.getSigners();
 
         const TDD = {
           url: "https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -199,7 +196,7 @@ describe("DESMO Contracts tests", function () {
       });
 
       it("Should retrieve 4 TDDs", async function () {
-        const [addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
+        const [addr1, addr2, addr3, addr4] = await ethers.getSigners();
 
         const TDD = {
           url: "https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
@@ -712,86 +709,4 @@ describe("DESMO Contracts tests", function () {
       });
     });
   });
-
-  // describe("DESMO-LD Contract tests", function () {
-  //   let desmo: DesmoLDContract;
-  //   let hub: DesmoLDHub;
-
-  //   beforeEach(async function () {
-  //     const DESMOHUB = await ethers.getContractFactory("DesmoLDHub");
-  //     hub = await DESMOHUB.deploy();
-  //     await hub.deployed();
-
-  //     const DESMCONTRACT = await ethers.getContractFactory("DesmoLDContract");
-  //     desmo = await DESMCONTRACT.deploy(hub.address);
-  //     await desmo.deployed();
-  //   });
-
-  //   describe("DESMO-LD Contract transactions tests", function () {
-  //     it("Should receive query result with 4 scores", async function () {
-  //       const [addr1] = await ethers.getSigners();
-  //       await desmo.connect(addr1).receiveResult("0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a712", "0x2000000000000000000000000000000000000000000000000000000000000000000402020003112e90");
-  //     });
-
-  //     it("Should receive query result with 8 scores", async function () {
-  //       const [addr1] = await ethers.getSigners();
-  //       await desmo.connect(addr1).receiveResult("0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a712", "0x200000000000000000000000000000000000000000000000000000000000000000008010101020102000200025110f013");
-  //     });
-
-  //     it("Should receive query result with 8 scores and string", async function () {
-  //       const [addr1] = await ethers.getSigners();
-  //         await desmo.connect(addr1).receiveResult("0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a712", "0x20000000000000000000000000000000000000000000000000000000000000000000801020002010100021400700072006f007600610020007100750065007300740061002000e800200075006e006100200073007400720069006e00670061");
-  //     });
-
-  //     it("Should update TDD scores", async function () {
-  //       const [addr1, addr2, addr3, addr4] = await ethers.getSigners();
-
-  //       const TDD = {
-  //         url:"https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
-  //         owner: addr1.address,
-  //         disabled: false,
-  //         score:0
-  //       }
-
-  //       const TDD2 = {
-  //         url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
-  //         owner: addr2.address,
-  //         disabled: false,
-  //         score:0
-  //       }
-
-  //       const TDD3 = {
-  //         url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:003",
-  //         owner: addr3.address,
-  //         disabled: false,
-  //         score:0
-  //       }
-
-  //       const TDD4 = {
-  //         url:"https://www.brenno.com.br/2019/wot/tdd/v1/TDD:004",
-  //         owner: addr4.address,
-  //         disabled: false,
-  //         score:0
-  //       }
-
-  //       await expect(
-  //         hub.connect(addr1).registerTDD(TDD.url)
-  //       ).emit(hub, "TDDCreated").withArgs(addr1.address, TDD.url, TDD.disabled, TDD.score);
-
-  //       await expect(
-  //         hub.connect(addr2).registerTDD(TDD2.url)
-  //       ).emit(hub, "TDDCreated").withArgs(addr2.address, TDD2.url, TDD.disabled, TDD.score);
-
-  //       await expect(
-  //         hub.connect(addr3).registerTDD(TDD3.url)
-  //       ).emit(hub, "TDDCreated").withArgs(addr3.address, TDD3.url, TDD.disabled, TDD.score);
-
-  //       await expect(
-  //         hub.connect(addr4).registerTDD(TDD4.url)
-  //       ).emit(hub, "TDDCreated").withArgs(addr4.address, TDD4.url, TDD.disabled, TDD.score);
-
-  //       hub.connect(addr1).updateScores("0x0000000000000000000000000000000000000000000000000000000000000000", "0x0402020003");
-  //     });
-  //   });
-  // });
 });

@@ -56,9 +56,7 @@ task(
   "generateRequestId",
   "generate a request id",
   async (taskArgs: { desmoHubAddress: string }, hre) => {
-    const desmoLDHubContract = await hre.ethers.getContractFactory(
-      "DesmoLDHub"
-    );
+    const desmoLDHubContract = await hre.ethers.getContractFactory("DesmoHub");
     const desmoHub = await desmoLDHubContract.attach(taskArgs.desmoHubAddress);
 
     const tx = await desmoHub.getNewRequestID();
@@ -77,9 +75,7 @@ task(
   "receiveResult",
   "receive a result",
   async (taskArgs: { desmoContractAddress: string; taskId: string }, hre) => {
-    const desmoLDContract = await hre.ethers.getContractFactory(
-      "DesmoLDContract"
-    );
+    const desmoLDContract = await hre.ethers.getContractFactory("Desmo");
     const desmoContract = await desmoLDContract.attach(
       taskArgs.desmoContractAddress
     );

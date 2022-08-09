@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 import "hardhat/console.sol";
 
 
-contract DesmoLDHub {
+contract DesmoHub {
     
     /**
      * Internal structure for storing Thing Description Directories.

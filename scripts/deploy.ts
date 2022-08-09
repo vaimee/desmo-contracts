@@ -14,15 +14,19 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const DesmoLDHub = await ethers.getContractFactory("DesmoLDHub");
-  const DesmoLDHContract = await ethers.getContractFactory("DesmoLDContract");
+  const DesmoLDHub = await ethers.getContractFactory("DesmoHub");
+  const DesmoLDHContract = await ethers.getContractFactory("Desmo");
   const desmoHub = await DesmoLDHub.deploy();
   await desmoHub.deployed();
 
   console.log("DesmoLDHub address:", desmoHub.address);
   console.log("DesmoLDHub deployed");
 
-  const desmoLDContract = await DesmoLDHContract.deploy(desmoHub.address);
+  const desmoLDContract = await DesmoLDHContract.deploy(
+    desmoHub.address,
+    // Select Iexec proxy automatically
+    "0x0000000000000000000000000000000000000000"
+  );
   await desmoLDContract.deployed();
 
   console.log("DesmoLDContract address:", desmoLDContract.address);
