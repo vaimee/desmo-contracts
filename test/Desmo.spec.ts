@@ -15,50 +15,38 @@ describe("Desmo", () => {
     );
     const task = {
       status: 3,
-      dealid:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      dealid: ethers.constants.HashZero,
       idx: 0,
       timeref: 0,
       contributionDeadline: 0,
       revealDeadline: 0,
       finalDeadline: 0,
-      consensusValue:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      consensusValue: ethers.constants.HashZero,
       revealCounter: 0,
       winnerCounter: 0,
-      contributors: ["0x65133424DAa7b019E04E11a52DeBEc6e872c7596"],
-      resultDigest:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-      results:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      contributors: [ethers.constants.AddressZero],
+      resultDigest: ethers.constants.HashZero,
+      results: ethers.constants.HashZero,
       resultsTimestamp: 0,
       resultsCallback:
         "0x20000000000000000000000000000000000000000000000000000000000000000b0402020202001121445c",
     };
     await iexecProxy.mock.viewTask.returns(Object.values(task));
     const deal = {
-      app: [
-        "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
-        "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
-        0,
-      ],
-      dataset: [
-        "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
-        "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
-        0,
-      ],
+      app: [ethers.constants.AddressZero, ethers.constants.AddressZero, 0],
+      dataset: [ethers.constants.AddressZero, ethers.constants.AddressZero, 0],
       workerpool: [
-        "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
-        "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
+        ethers.constants.AddressZero,
+        ethers.constants.AddressZero,
         0,
       ],
       trust: 0,
       category: 0,
-      tag: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      requester: "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
-      beneficiary: "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
-      callback: "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
-      params: "0x65133424DAa7b019E04E11a52DeBEc6e872c7596",
+      tag: ethers.constants.HashZero,
+      requester: ethers.constants.AddressZero,
+      beneficiary: ethers.constants.AddressZero,
+      callback: ethers.constants.AddressZero,
+      params: ethers.constants.AddressZero,
       startTime: 0,
       botFirst: 0,
       botSize: 0,
@@ -77,19 +65,13 @@ describe("Desmo", () => {
   });
 
   it("should process a simple query result", async () => {
-    const txt = await desmo.receiveResult(
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "0x00"
-    );
+    const txt = await desmo.receiveResult(ethers.constants.HashZero, "0x00");
     await expect(txt)
       .emit(desmo, "QueryCompleted")
-      .withArgs(
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-        [
-          "0x000000000000000000000000000000000000000000000000000000000000000b",
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "0x001121445c",
-        ]
-      );
+      .withArgs(ethers.constants.HashZero, [
+        "0x000000000000000000000000000000000000000000000000000000000000000b",
+        ethers.constants.HashZero,
+        "0x001121445c",
+      ]);
   });
 });

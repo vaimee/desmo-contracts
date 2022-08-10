@@ -25,7 +25,7 @@ async function main() {
   const desmoLDContract = await DesmoLDHContract.deploy(
     desmoHub.address,
     // Select Iexec proxy automatically
-    "0x0000000000000000000000000000000000000000"
+    ethers.constants.AddressZero
   );
   await desmoLDContract.deployed();
 
