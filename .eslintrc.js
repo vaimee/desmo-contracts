@@ -29,5 +29,17 @@ module.exports = {
         allowModules: ["@iexec/poco"],
       },
     ],
+    "node/no-missing-import": [
+      "error",
+      {
+        // typechain is imported in tests. The folder
+        // contains the typescript definitions for the
+        // contracts. We have to manually allow import of 
+        // ts and d.ts files and explicitly add the folder 
+        // path. 
+        resolvePaths: ["./typechain"],
+        tryExtensions: [".js", ".json", ".node", ".ts", "d.ts"],
+      },
+    ],
   },
 };
