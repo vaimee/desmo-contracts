@@ -20,5 +20,14 @@ module.exports = {
       "error",
       { ignores: ["modules"] },
     ],
+    "node/no-extraneous-import": [
+      "error",
+      {
+        // @iexec/poco is a dependency of @iexec/doracle;
+        // we allow it to be imported from the tests to
+        // mock iexec proxy
+        allowModules: ["@iexec/poco"],
+      },
+    ],
   },
 };
