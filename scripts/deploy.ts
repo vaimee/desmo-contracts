@@ -19,8 +19,8 @@ async function main() {
   const desmoHub = await DesmoLDHub.deploy();
   await desmoHub.deployed();
 
-  console.log("DesmoLDHub address:", desmoHub.address);
-  console.log("DesmoLDHub deployed");
+  console.log("DesmoHub address:", desmoHub.address);
+  console.log("DesmoHub deployed");
 
   const desmoLDContract = await DesmoLDHContract.deploy(
     desmoHub.address,
@@ -29,8 +29,8 @@ async function main() {
   );
   await desmoLDContract.deployed();
 
-  console.log("DesmoLDContract address:", desmoLDContract.address);
-  console.log("DesmoLDContract deployed");
+  console.log("Desmo address:", desmoLDContract.address);
+  console.log("Desmo deployed");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
