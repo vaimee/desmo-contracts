@@ -1,4 +1,5 @@
 import { ethers, waffle } from "hardhat";
+// @ts-ignore
 import { DesmoHub, Desmo } from "../typechain";
 import IexecProxyBuild from "@iexec/poco/build/contracts-waffle/IexecInterfaceToken.json";
 import { expect } from "chai";

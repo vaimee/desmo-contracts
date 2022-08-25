@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+// @ts-ignore
 import { DesmoHub } from "../typechain";
 
 describe("DESMO Contracts tests", function () {
@@ -245,7 +246,7 @@ describe("DESMO Contracts tests", function () {
         const resquestId1 = await hub.connect(addr1).getNewRequestID();
         const awaitRequestID1 = await resquestId1.wait();
         const awaitRequestID1EventName = awaitRequestID1.events?.find(
-          (event) => {
+          (event:any) => {
             return event.event === "RequestID";
           }
         );
@@ -293,7 +294,7 @@ describe("DESMO Contracts tests", function () {
         const resquestId1 = await hub.connect(addr1).getNewRequestID();
         const awaitRequestID1 = await resquestId1.wait();
         const awaitRequestID1EventName = awaitRequestID1.events?.find(
-          (event) => {
+          (event:any) => {
             return event.event === "RequestID";
           }
         );
@@ -388,7 +389,7 @@ describe("DESMO Contracts tests", function () {
         const resquestId1 = await hub.connect(addr1).getNewRequestID();
         const awaitRequestID1 = await resquestId1.wait();
         const awaitRequestID1EventName = awaitRequestID1.events?.find(
-          (event) => {
+          (event:any) => {
             return event.event === "RequestID";
           }
         );
@@ -546,7 +547,7 @@ describe("DESMO Contracts tests", function () {
         const awaitRequestID1 = await resquestId1.wait();
 
         const awaitRequestID1EventName = awaitRequestID1.events?.find(
-          (event) => {
+          (event:any) => {
             return event.event === "RequestID";
           }
         );
@@ -568,7 +569,7 @@ describe("DESMO Contracts tests", function () {
         const resquestId2 = await hub.connect(addr2).getNewRequestID();
         const awaitRequestID2 = await resquestId2.wait();
         const awaitRequestID2EventName = awaitRequestID2.events?.find(
-          (event) => {
+          (event:any) => {
             return event.event === "RequestID";
           }
         );
@@ -666,7 +667,7 @@ describe("DESMO Contracts tests", function () {
         const awaitRequestID1 = await resquestId1.wait();
 
         const awaitRequestID1EventName = awaitRequestID1.events?.find(
-          (event) => {
+          (event:any) => {
             return event.event === "RequestID";
           }
         );
@@ -688,7 +689,7 @@ describe("DESMO Contracts tests", function () {
         const resquestId2 = await hub.connect(addr2).getNewRequestID();
         const awaitRequestID2 = await resquestId2.wait();
         const awaitRequestID2EventName = awaitRequestID2.events?.find(
-          (event) => {
+          (event:any) => {
             return event.event === "RequestID";
           }
         );

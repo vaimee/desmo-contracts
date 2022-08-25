@@ -62,7 +62,7 @@ task(
     const tx = await desmoHub.getNewRequestID();
     const txData = await tx.wait();
 
-    const event = txData.events?.find((event) => {
+    const event = txData.events?.find((event: any) => {
       return event.event === "RequestID";
     });
 
@@ -87,7 +87,7 @@ task(
 
     const txData = await tx.wait();
 
-    const event = txData.events?.find((event) => {
+    const event = txData.events?.find((event: any) => {
       return event.event === "QueryResult";
     });
 
