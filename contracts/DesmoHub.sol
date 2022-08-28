@@ -1,10 +1,11 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
+import "@openzeppelin/contracts/utils/EnumerableMap.sol";
 import "hardhat/console.sol";
 
 
 contract DesmoHub {
-    
+    using EnumerableMap for EnumerableMap.UintToAddressMap;
     /**
      * Internal structure for storing Thing Description Directories.
      */
@@ -30,6 +31,7 @@ contract DesmoHub {
         
     // TDDs Storage
     mapping (address => TDD) private tddStorage;
+    EnumerableMap.UintToAddressMap private tddIndex;
     mapping (string => TDD) private tddBucket;
     mapping (bytes => string[]) private selectedTDDs;
     mapping (bytes => bytes) private scoreStorage;
@@ -82,7 +84,7 @@ contract DesmoHub {
     public
     view
     returns(uint256){
-        return tddStorageLength;
+        return tddIndex.length();
     }
 
     /**
@@ -119,6 +121,22 @@ contract DesmoHub {
     }
 
     /**
+     * @dev Returns a TDD description at a given `index` of all the TDDs stored by the contract.
+     * Use along with {getTDDStorageLength} to enumerate all TDDs registered in the system.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
+    function getTDDByIndex(uint256 index)
+    external
+    notEmptyTDDStorage
+    view
+    returns (TDD memory){
+        return tddStorage[tddIndex.get(index)];
+    }
+
+    /**
     * @dev Register a new Thing Description Directory in the system for the message sender.
     *      If the TDD is already registered and enabled, the transaction is rejected. 
     *      You can register a new TDD if the previous one is disabled.
@@ -142,6 +160,7 @@ contract DesmoHub {
             tddBucket[tdd.url] = tdd;
             emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
         }
+        tddIndex.set(tddIndex.length(), msg.sender);
     }
     /**
     * @dev Disable the Thing Description Directory of the message sender.

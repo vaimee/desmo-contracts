@@ -707,6 +707,77 @@ describe("DESMO Contracts tests", function () {
           ]);
         }
       });
+
+      it("Should enumerate TDDs", async function () {
+        const [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+        const TDDs= [
+          {
+            url: "https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
+            owner: addr1.address,
+            disabled: false,
+            score: 0,
+          },
+          {
+            url: "https://www.brenno.com.br/2019/wot/tdd/v1/TDD:002",
+            owner: addr2.address,
+            disabled: false,
+            score: 0,
+          },
+          {
+            url: "https://www.brenno.com.br/2019/wot/tdd/v1/TDD:003",
+            owner: addr3.address,
+            disabled: false,
+            score: 0,
+          },
+          {
+            url: "https://www.brenno.com.br/2019/wot/tdd/v1/TDD:004",
+            owner: addr4.address,
+            disabled: false,
+            score: 0,
+          }
+        ]
+
+        await expect(hub.connect(addr1).registerTDD(TDDs[0].url))
+          .emit(hub, "TDDCreated")
+          .withArgs(addr1.address, TDDs[0].url, TDDs[0].disabled, TDDs[0].score);
+
+        await expect(hub.connect(addr2).registerTDD(TDDs[1].url))
+          .emit(hub, "TDDCreated")
+          .withArgs(addr2.address, TDDs[1].url, TDDs[1].disabled, TDDs[1].score);
+
+        await expect(hub.connect(addr3).registerTDD(TDDs[2].url))
+          .emit(hub, "TDDCreated")
+          .withArgs(addr3.address, TDDs[2].url, TDDs[2].disabled, TDDs[2].score);
+
+        await expect(hub.connect(addr4).registerTDD(TDDs[3].url))
+          .emit(hub, "TDDCreated")
+          .withArgs(addr4.address, TDDs[3].url, TDDs[3].disabled, TDDs[3].score);
+
+        const length = await hub.connect(addr1).getTDDStorageLength();
+        expect(length.toNumber()).to.equal(4);
+
+        for (let i = 0; i < length.toNumber(); i++) {
+          const {url, owner, score, disabled} = await hub.connect(addr1).getTDDByIndex(i)
+          await expect({url, owner, score : score.toNumber(), disabled}).to.deep.equal(TDDs[i]);
+        }
+      });
+
+      it("Should fail for index grater then tddStorageLength", async function () {
+        const [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+        const TDDs= [
+          {
+            url: "https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001",
+            owner: addr1.address,
+            disabled: false,
+            score: 0,
+          }
+        ]
+
+        await expect(hub.connect(addr1).registerTDD(TDDs[0].url))
+          .emit(hub, "TDDCreated")
+          .withArgs(addr1.address, TDDs[0].url, TDDs[0].disabled, TDDs[0].score);
+        await expect(hub.connect(addr1).getTDDByIndex(1)).to.be.reverted
+      });
     });
   });
 });
