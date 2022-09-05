@@ -104,11 +104,18 @@ task(
 const config: HardhatUserConfig = {
   solidity: "0.6.12",
   networks: {
-    viviani: {
+    vivianiWhiteListed: {
       url: "https://viviani.iex.ec",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    viviani: {
+      url: "https://viviani.iex.ec",
+      accounts: {
+        mnemonic: "test test test test test test test test test test test junk",
+        count: 10
+      }
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
