@@ -778,6 +778,13 @@ describe("DESMO Contracts tests", function () {
           .withArgs(addr1.address, TDDs[0].url, TDDs[0].disabled, TDDs[0].score);
         await expect(hub.connect(addr1).getTDDByIndex(1)).to.be.reverted
       });
+
+      it("Should return 0 tddStorageLength", async function () {
+        const [addr1] = await ethers.getSigners();
+
+        const length = await hub.connect(addr1).getTDDStorageLength();
+        expect(length.toNumber()).to.equal(0);
+      });
     });
   });
 });

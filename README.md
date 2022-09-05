@@ -12,5 +12,5 @@ The best way of using Desmo-LD is to use our handcrafted [SDK](https://github.co
 Currently, a single instance of Desmo and DesmoHub is deployed on the viviani network. In the table you can find the contract addresses. 
 | Contract  | Address  | 
 |---|---|
-| DesmoHub  | [0xe3eb8F758994e7fdf904010B33D9340728906bE5](https://blockscout-viviani.iex.ec/address/0xe3eb8F758994e7fdf904010B33D9340728906bE5/transactions)  |
-| Desmo | [0x579afd382E18c9BB5fDDD26f99Dd5aE093Ca5ff9](https://blockscout-viviani.iex.ec/address/0x579afd382E18c9BB5fDDD26f99Dd5aE093Ca5ff9/transactions)  |
+| DesmoHub  | [0x10fFd14a2dd48Cc0d9eB00e5d2c0957aCB97F3Cd](https://blockscout-viviani.iex.ec/address/0x10fFd14a2dd48Cc0d9eB00e5d2c0957aCB97F3Cd/transactions)  |
+| Desmo | [0xb4E5d4772a45EeB766bb612939FE8f5128Fea531](https://blockscout-viviani.iex.ec/address/0xb4E5d4772a45EeB766bb612939FE8f5128Fea531/transactions)  |
