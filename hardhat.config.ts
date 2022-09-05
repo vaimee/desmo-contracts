@@ -27,10 +27,10 @@ task(
 
     for (let i = 0; i < 4; i++) {
       const account = accounts[i];
-      const desmoLDContract = await hre.ethers.getContractFactory("DesmoLDHub");
+      const desmoLDContract = await hre.ethers.getContractFactory("DesmoHub");
       const desmoHub = await desmoLDContract.attach(taskArgs.desmoHubAddress);
       const url = `https://desmold-zion-${i + 1}.vaimee.it`;
-      await desmoHub.registerTDD(url, {
+      await desmoHub.connect(account).registerTDD(url, {
         from: account.address,
       });
       console.log("Registered", url);
@@ -43,7 +43,7 @@ task(
   "list all the TDDs in desmo-ld",
   async (taskArgs: { desmoHubAddress: string }, hre) => {
     const desmoLDHubContract = await hre.ethers.getContractFactory(
-      "DesmoLDHub"
+      "DesmoHub"
     );
     const desmoHub = await desmoLDHubContract.attach(taskArgs.desmoHubAddress);
     const tdds = await desmoHub.getTDDStorageLength();
