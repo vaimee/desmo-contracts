@@ -1,5 +1,8 @@
 {
-  "name": "hardhat-project",
+  "name": "@vaimee/desmo-contracts",
+  "description": "Latest on chain Contract ABIs for the DESMO-LD platform.",
+  "repository": "https://github.com/vaimee/desmo-contracts",
+  "homepage": "https://github.com/vaimee/desmo",
   "scripts": {
     "build": "hardhat compile",
     "deploy:init": "hardhat --network viviani registerTDDs",
