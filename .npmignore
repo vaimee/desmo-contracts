@@ -1,4 +1,5 @@
 hardhat.config.ts
 scripts
+contracts/**/*.sol
 test
 node_modules
