@@ -46,5 +46,5 @@
     "@iexec/doracle": "^5.2.1-2",
     "openzeppelin-solidity": "^2.2.0"
   },
-  "version": "1.0.0-alpha.10"
+  "version": "1.0.0-alpha.10-bis"
 }
