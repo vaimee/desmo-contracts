@@ -3,6 +3,7 @@
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
+import { writeFileSync } from "fs";
 import { ethers } from "hardhat";
 
 async function main() {
@@ -31,6 +32,11 @@ async function main() {
 
   console.log("Desmo address:", desmoLDContract.address);
   console.log("Desmo deployed");
+
+  writeFileSync("./deployed.json", JSON.stringify({
+    desmoHub: desmoHub.address,
+    desmo: desmoLDContract.address
+  }));
 }
 
 // We recommend this pattern to be able to use async/await everywhere
