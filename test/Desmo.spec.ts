@@ -6,6 +6,7 @@ import { expect } from "chai";
 describe("Desmo", () => {
   let desmoHub: DesmoHub;
   let desmo: Desmo;
+  let task: any; 
 
   beforeEach(async () => {
     const signers = await ethers.getSigners();
@@ -13,7 +14,7 @@ describe("Desmo", () => {
       signers[0],
       IexecProxyBuild.abi
     );
-    const task = {
+    task = {
       status: 3,
       dealid: ethers.constants.HashZero,
       idx: 0,
@@ -29,7 +30,7 @@ describe("Desmo", () => {
       results: ethers.constants.HashZero,
       resultsTimestamp: 0,
       resultsCallback:
-        "0x20000000000000000000000000000000000000000000000000000000000000000b0402020202001121445c",
+        "0x2000000000000000000000000000000000000000000000000000000000000000000402020202001121445c",
     };
     await iexecProxy.mock.viewTask.returns(Object.values(task));
     const deal = {
@@ -65,13 +66,28 @@ describe("Desmo", () => {
   });
 
   it("should process a simple query result", async () => {
+    await desmoHub.registerTDD("https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001");
+    const txtRequestID = await (await desmoHub.getNewRequestID()).wait();
+    const requestIDEvent = txtRequestID.events?.find( event => event.event === "RequestID");
+    expect(requestIDEvent).to.not.be.undefined;
+    
+    const requestID = requestIDEvent?.args?.requestID;
+
     const txt = await desmo.receiveResult(ethers.constants.HashZero, "0x00");
     await expect(txt)
       .emit(desmo, "QueryCompleted")
       .withArgs(ethers.constants.HashZero, [
-        "0x000000000000000000000000000000000000000000000000000000000000000b",
+        requestID,
         ethers.constants.HashZero,
         "0x001121445c",
       ]);
+
+    const scores =await desmoHub.getScoresByRequestID(requestID);
+    const {score} = await desmoHub.getTDDByIndex(0);
+    expect(scores.length).to.equal(4);
+    for (let i = 0; i < scores.length; i++) {
+      expect(scores[i]).to.equal("0x02");
+    }
+    expect(score.toNumber()).to.equal(2);
   });
 });

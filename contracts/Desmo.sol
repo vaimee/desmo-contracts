@@ -91,12 +91,12 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
     {
         bytes memory results = _iexecDoracleGetVerifiedResult(taskID);
         values[taskID] = _processQueryResult(taskID, results);
+        
         emit QueryCompleted(taskID, values[taskID]);
     }
         
     function _processQueryResult(bytes32 taskID, bytes memory payload)
         internal
-        pure
         returns (QueryResult memory result)
     {
         uint8 requestIDLength;
@@ -121,7 +121,8 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
         }
 
         bytes memory queryResult = new bytes(payload.length - requestIDLength - 2 - scoreAmount);
-        //desmoHub.updateScores(requestID, scores);
+        //TODO: move this function to recevieResult
+        desmoHub.updateScores(requestID, resultScores);
         for(uint8 i = 0; i < queryResult.length; i++) {
             queryResult[i] = payload[requestIDLength + 2 + scoreAmount + i];
         }

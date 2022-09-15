@@ -33,13 +33,13 @@ contract DesmoHub {
     mapping (address => TDD) private tddStorage;
     EnumerableMap.UintToAddressMap private tddIndex;
     mapping (string => TDD) private tddBucket;
-    mapping (bytes => string[]) private selectedTDDs;
-    mapping (bytes => bytes) private scoreStorage;
+    mapping (bytes32 => string[]) private selectedTDDs;
+    mapping (bytes32 => bytes1[]) private scoreStorage;
 
     event TDDCreated (address indexed key, string url, bool disabled, uint256 score);
     event TDDDisabled (address indexed key, string url);
     event TDDEnabled (address indexed key, string url);
-    event RequestID (bytes requestID);
+    event RequestID (bytes32 requestID);
 
     constructor() public{ 
     }
@@ -90,10 +90,10 @@ contract DesmoHub {
     /**
     * @dev Return the list of scores related to RequestID 
     */
-    function getScoresByRequestID(bytes memory requestID) 
+    function getScoresByRequestID(bytes32 requestID) 
     public 
     view 
-    returns (bytes memory){
+    returns (bytes1[] memory){
         return scoreStorage[requestID];
     }
 
@@ -101,7 +101,7 @@ contract DesmoHub {
     * @dev Every request has a unique set of TDDs. 
     *      This function returns the list of TDDs related to a request.
     */
-    function getTDDByRequestID(bytes memory requestID) 
+    function getTDDByRequestID(bytes32 requestID) 
     public
     view
     returns (string[] memory) {
@@ -197,8 +197,8 @@ contract DesmoHub {
     function getNewRequestID() 
     external
     notEmptyTDDStorage
-    returns (bytes memory) {    
-        bytes memory key = abi.encodePacked(requestIdCounter);
+    returns (bytes32) {    
+        bytes32 key = bytes32(requestIdCounter);
         uint256 currentSelectionSize = tddSelectionSize;
 
         if(currentSelectionSize > tddStorageLength) {
@@ -220,12 +220,11 @@ contract DesmoHub {
         revert("Too few TDD registered");
     }
 
-    function updateScores(bytes memory requestID, bytes memory scores)
+    function updateScores(bytes32 requestID, bytes1[] memory scores)
     public {
         string[] memory tdds = selectedTDDs[requestID];
         scoreStorage[requestID] = scores;
-
-        for (uint256 i = 0; i <= tdds.length - 1; i++){
+        for (uint256 i = 0; i < tdds.length; i++){
             TDD storage tdd = tddStorage[tddBucket[tdds[i]].owner];
             tdd.score = tdd.score + uint8(bytes1(scores[i]));
         }
