@@ -19,7 +19,8 @@ contract DesmoHub {
         // Quality score about the TDD, calculated by the protocol
         uint256 score;
     }
-        
+
+    // -- State --
     // TDDs Storage
     mapping (address => TDD) private tddStorage;
     EnumerableMap.UintToAddressMap private tddIndex;
@@ -29,32 +30,19 @@ contract DesmoHub {
 
     // Scores can only be updated by the manager of TDDs
     address private scoreManager = address(0x0);
-
+    
+    // -- Events --
     event TDDCreated (address indexed key, string url, bool disabled, uint256 score);
     event TDDDisabled (address indexed key, string url);
     event TDDEnabled (address indexed key, string url);
 
-    constructor() public{ 
-    }
-
-    /**
-     * @dev Sets a score manager for this DESMO Hub. Only the score manager can update the scores of the TDDs.
-     * Requirements:
-     * - score manager can only set once
-     */
-    function setScoreManager(address scoreManagerAddress) external {
-        // TODO: let the owner of the contract to always set the score manager
-        require(scoreManager == address(0x0), "DesmoHub: Score manager can only be set once");
-        scoreManager = scoreManagerAddress;
-    }
-
+    // -- Modifiers --
     // Modifier to check if the address is already used in the tddStorage
     modifier addressAlreadyInPlace() {
         require(!tddAlreadyInStorage(), "Sender already stored a value.");
         _;
     }
     
-
     // Modifier to check that msg.address == TDD owner
     modifier onlyTDDOwner() {
         require(msg.sender == tddStorage[msg.sender].owner, "Not the TDD owner.");
@@ -71,6 +59,27 @@ contract DesmoHub {
     modifier onlyScoreManager() {
         require(scoreManager == address(0x0) || msg.sender == scoreManager, "This method can be only called by the score manager.");
         _;
+    }
+    
+    // -- Functions --
+    /**
+     * @dev Sets a score manager for this DESMO Hub. Only the score manager can update the scores of the TDDs.
+     * Requirements:
+     * - score manager can only set once
+     */
+    function setScoreManager(address scoreManagerAddress) external {
+        // TODO: let the owner of the contract to always set the score manager
+        require(scoreManager == address(0x0), "DesmoHub: Score manager can only be set once");
+        scoreManager = scoreManagerAddress;
+    }
+
+    /**
+    * @dev Update the score of the TDD.
+    */
+    function setScore(address owner, uint8 score)
+    public 
+    onlyScoreManager {
+        tddStorage[owner].score = uint256(score);
     }
 
     /**
@@ -208,14 +217,5 @@ contract DesmoHub {
         } else {
             revert("No TDD owner or No TDD to enable.");
         }
-    }
-
-    /**
-    * @dev Update the score of the TDD.
-    */
-    function setScore(address owner, uint8 score)
-    public 
-    onlyScoreManager {
-        tddStorage[owner].score = uint256(score);
     }
 }
