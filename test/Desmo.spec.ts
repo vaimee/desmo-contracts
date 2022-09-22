@@ -4,10 +4,12 @@ import { expect } from "chai";
 import IexecProxyMock from "./mocks/IexecProxyMock";
 import { fail } from "assert";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { MockContract } from "ethereum-waffle";
 
 describe("Desmo", () => {
   let desmoHub: DesmoHub;
   let desmo: Desmo; 
+  let addresses: SignerWithAddress[];
   const fakeTDDURLs = [
     "https://test.it/1",
     "https://test.it/2",
@@ -16,24 +18,15 @@ describe("Desmo", () => {
     "https://test.it/5",
     "https://test.it/6",
   ];
-  let addresses: SignerWithAddress[];
 
   beforeEach(async () => {
     addresses = await ethers.getSigners();
 
     const iexecProxy = await IexecProxyMock.deploy();
-
-    const DesmoHub = await ethers.getContractFactory("DesmoHub");
-    desmoHub = await DesmoHub.deploy();
-    await desmoHub.deployed();
-
-    // Register a small set of TDDs
-    for (let i = 0; i < fakeTDDURLs.length; i++) {
-      await desmoHub.connect(addresses[i]).registerTDD(fakeTDDURLs[i]); 
-    }
-
-    const Desmo = await ethers.getContractFactory("Desmo");
-    desmo = await Desmo.deploy(desmoHub.address, iexecProxy.address);
+    desmoHub =  await deployDesmoHub();
+    desmo = await deployDesmo(desmoHub, iexecProxy);
+    
+    await registerTDDs(addresses, fakeTDDURLs, desmoHub);
   });
 
   it("should process a simple query result", async () => {
@@ -58,7 +51,7 @@ describe("Desmo", () => {
       });
     const result = await desmo.getQueryResultByRequestID(requestID);
     const scores = result.scores;
-    
+
     expect(scores.length).to.equal(4);
     for (let i = 0; i < scores.length; i++) {
       expect(scores[i]).to.equal("0x02");
@@ -103,11 +96,8 @@ describe("Desmo", () => {
   
   it("should revert for empty hub", async () => {
     const iexecProxy = await IexecProxyMock.deploy();
-    const DesmoHub = await ethers.getContractFactory("DesmoHub");
-    desmoHub = await DesmoHub.deploy();
-    await desmoHub.deployed();
-    const Desmo = await ethers.getContractFactory("Desmo");
-    desmo = await Desmo.deploy(desmoHub.address, iexecProxy.address);
+    desmoHub = await deployDesmoHub();
+    desmo = await deployDesmo(desmoHub, iexecProxy);
 
     await expect(desmo.generateNewRequestID()).to.be.revertedWith("No TDDs available");
 
@@ -124,17 +114,11 @@ describe("Desmo", () => {
   });
 
   it("should select less tdds than the requested selection size", async () => {
-    const addresses = await ethers.getSigners();
     const iexecProxy = await IexecProxyMock.deploy();
-    const DesmoHub = await ethers.getContractFactory("DesmoHub");
-    desmoHub = await DesmoHub.deploy();
-    await desmoHub.deployed();
-    const Desmo = await ethers.getContractFactory("Desmo");
-    desmo = await Desmo.deploy(desmoHub.address, iexecProxy.address);
+    desmoHub = await deployDesmoHub();
+    desmo = await deployDesmo(desmoHub, iexecProxy);
 
-    for (let i = 0; i < 2; i++) {
-      await desmoHub.connect(addresses[i]).registerTDD(fakeTDDURLs[i]);
-    }
+    await registerTDDs(addresses, fakeTDDURLs.slice(0,2), desmoHub);
 
     await expect(desmo.generateNewRequestID())
       .emit(desmo, "RequestCreated").withNamedArgs({
@@ -148,8 +132,6 @@ describe("Desmo", () => {
   });
 
   it("should skip disabled TDD", async () => {
-    const addresses = await ethers.getSigners();
-    // Register a small set of TDDs
     for (let i = 0; i < 2; i++) {
       await desmoHub.connect(addresses[i]).disableTDD();
     }
@@ -179,7 +161,6 @@ describe("Desmo", () => {
         }
       })
     
-    // Register a small set of TDDs
     for (let i = 0; i < 2; i++) {
       await desmoHub.connect(addresses[i]).disableTDD();
     }
@@ -227,4 +208,24 @@ describe("Desmo", () => {
         }
       })
   });
+
+  async function deployDesmoHub() {
+    const DesmoHub = await ethers.getContractFactory("DesmoHub");
+    const desmoHub = await DesmoHub.deploy();
+    await desmoHub.deployed();
+    return desmoHub;
+  }
+  
+  async function deployDesmo(desmoHub: DesmoHub, iexecProxy: MockContract) {
+    const Desmo = await ethers.getContractFactory("Desmo");
+    const desmo = await Desmo.deploy(desmoHub.address, iexecProxy.address);
+    await desmo.deployed();
+    return desmo;
+  }
+
+  async function registerTDDs(addresses: SignerWithAddress[], tdds: string[], desmoHub: DesmoHub) {
+    for (let i = 0; i < tdds.length; i++) {
+      await desmoHub.connect(addresses[i]).registerTDD(tdds[i]);
+    }
+  }
 });
