@@ -19,33 +19,20 @@ contract DesmoHub {
         // Quality score about the TDD, calculated by the protocol
         uint256 score;
     }
-
-    // Size of the TDD lists to be selected
-    uint256 internal tddSelectionSize = 4;
-    uint256 internal tddCounter = 0; 
-    address[] private registeredAddresses;
-    uint256 private tddStorageLength = 0;
-
-    // Request ID counter
-    uint256 internal requestIdCounter = 0;
         
     // TDDs Storage
     mapping (address => TDD) private tddStorage;
     EnumerableMap.UintToAddressMap private tddIndex;
     EnumerableMap.UintToAddressMap private enabledTddsIndex;
     mapping (address => uint256) private addressToEnabledTDDsIndex;
+    mapping (string => TDD) private urlToTDD;
 
     // Scores can only be updated by the manager of TDDs
     address private scoreManager = address(0x0);
 
-    mapping (string => TDD) private tddBucket;
-    mapping (bytes32 => string[]) private selectedTDDs;
-    mapping (bytes32 => bytes1[]) private scoreStorage;
-
     event TDDCreated (address indexed key, string url, bool disabled, uint256 score);
     event TDDDisabled (address indexed key, string url);
     event TDDEnabled (address indexed key, string url);
-    event RequestID (bytes32 requestID);
 
     constructor() public{ 
     }
@@ -76,7 +63,7 @@ contract DesmoHub {
 
     // Modifier to ensure the retrieval of a subset of TDDs > 0
     modifier notEmptyTDDStorage () {
-        require(tddStorageLength > 0, "No TDD available.");
+        require(tddIndex.length() > 0, "No TDD available.");
         _;
     }
 
@@ -118,27 +105,6 @@ contract DesmoHub {
     view
     returns(uint256){
         return enabledTddsIndex.length();
-    }
-
-    /**
-    * @dev Return the list of scores related to RequestID 
-    */
-    function getScoresByRequestID(bytes32 requestID) 
-    public 
-    view 
-    returns (bytes1[] memory){
-        return scoreStorage[requestID];
-    }
-
-    /**
-    * @dev Every request has a unique set of TDDs. 
-    *      This function returns the list of TDDs related to a request.
-    */
-    function getTDDByRequestID(bytes32 requestID) 
-    public
-    view
-    returns (string[] memory) {
-        return selectedTDDs[requestID];
     }
 
     /**
@@ -197,16 +163,14 @@ contract DesmoHub {
         if (tddAlreadyInStorage()){
             if (tddStorage[msg.sender].disabled == true){
                 tddStorage[msg.sender] = tdd;
-                tddBucket[tdd.url] = tdd;
+                urlToTDD[tdd.url] = tdd;
                 emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
             } else {
                 revert("Disable the last one");
             }
         }else{
             tddStorage[msg.sender] = tdd;
-            tddStorageLength += 1;
-            registeredAddresses.push(msg.sender);
-            tddBucket[tdd.url] = tdd;
+            urlToTDD[tdd.url] = tdd;
             emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
         }
         
@@ -214,6 +178,7 @@ contract DesmoHub {
         addressToEnabledTDDsIndex[msg.sender] = enabledTddsIndex.length() - 1;
         tddIndex.set(tddIndex.length(), msg.sender);
     }
+
     /**
     * @dev Disable the Thing Description Directory of the message sender.
     */
@@ -221,7 +186,7 @@ contract DesmoHub {
     external{
         if(tddAlreadyInStorage()){
             tddStorage[msg.sender].disabled = true;
-            delete tddBucket[tddStorage[msg.sender].url];
+            delete urlToTDD[tddStorage[msg.sender].url];
             enabledTddsIndex.remove(addressToEnabledTDDsIndex[msg.sender]);
             emit TDDDisabled(msg.sender, tddStorage[msg.sender].url);
         } else {
@@ -236,7 +201,7 @@ contract DesmoHub {
     external{
         if (tddStorage[msg.sender].disabled == true){
             tddStorage[msg.sender].disabled = false;
-            tddBucket[tddStorage[msg.sender].url] = tddStorage[msg.sender];
+            urlToTDD[tddStorage[msg.sender].url] = tddStorage[msg.sender];
             enabledTddsIndex.set(enabledTddsIndex.length(), msg.sender);
             addressToEnabledTDDsIndex[msg.sender] = enabledTddsIndex.length() - 1;
             emit TDDEnabled(msg.sender, tddStorage[msg.sender].url);
