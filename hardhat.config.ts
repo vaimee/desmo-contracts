@@ -55,11 +55,11 @@ task(
 task(
   "generateRequestId",
   "generate a request id",
-  async (taskArgs: { desmoHubAddress: string }, hre) => {
-    const desmoLDHubContract = await hre.ethers.getContractFactory("DesmoHub");
-    const desmoHub = await desmoLDHubContract.attach(taskArgs.desmoHubAddress);
+  async (taskArgs: { desmoAddress: string }, hre) => {
+    const desmoLDHubContract = await hre.ethers.getContractFactory("Desmo");
+    const desmoHub = await desmoLDHubContract.attach(taskArgs.desmoAddress);
 
-    const tx = await desmoHub.getNewRequestID();
+    const tx = await desmoHub.generateNewRequestID()
     const txData = await tx.wait();
 
     const event = txData.events?.find((event) => {
@@ -69,7 +69,7 @@ task(
     const id = event?.args;
     console.log("Your request id:", id);
   }
-).addParam("desmoHubAddress", "the address of the desmo-ld hub");
+).addParam("desmoAddress", "the address of the desmo-ld");
 
 task(
   "receiveResult",

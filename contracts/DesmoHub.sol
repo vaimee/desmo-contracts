@@ -32,6 +32,12 @@ contract DesmoHub {
     // TDDs Storage
     mapping (address => TDD) private tddStorage;
     EnumerableMap.UintToAddressMap private tddIndex;
+    EnumerableMap.UintToAddressMap private enabledTddsIndex;
+    mapping (address => uint256) private addressToEnabledTDDsIndex;
+
+    // Scores can only be updated by the manager of TDDs
+    address private scoreManager = address(0x0);
+
     mapping (string => TDD) private tddBucket;
     mapping (bytes32 => string[]) private selectedTDDs;
     mapping (bytes32 => bytes1[]) private scoreStorage;
@@ -42,6 +48,17 @@ contract DesmoHub {
     event RequestID (bytes32 requestID);
 
     constructor() public{ 
+    }
+
+    /**
+     * @dev Sets a score manager for this DESMO Hub. Only the score manager can update the scores of the TDDs.
+     * Requirements:
+     * - score manager can only set once
+     */
+    function setScoreManager(address scoreManagerAddress) external {
+        // TODO: let the owner of the contract to always set the score manager
+        require(scoreManager == address(0x0), "DesmoHub: Score manager can only be set once");
+        scoreManager = scoreManagerAddress;
     }
 
     // Modifier to check if the address is already used in the tddStorage
@@ -60,6 +77,12 @@ contract DesmoHub {
     // Modifier to ensure the retrieval of a subset of TDDs > 0
     modifier notEmptyTDDStorage () {
         require(tddStorageLength > 0, "No TDD available.");
+        _;
+    }
+
+    // Restrict a method to be called only by the score manager
+    modifier onlyScoreManager() {
+        require(scoreManager == address(0x0) || msg.sender == scoreManager, "This method can be only called by the score manager.");
         _;
     }
 
@@ -85,6 +108,16 @@ contract DesmoHub {
     view
     returns(uint256){
         return tddIndex.length();
+    }
+
+    /**
+    * @dev How many enabled TDDs are registered in the system.
+    */
+    function getEnabledTDDsStorageLength()
+    public
+    view
+    returns(uint256){
+        return enabledTddsIndex.length();
     }
 
     /**
@@ -137,6 +170,22 @@ contract DesmoHub {
     }
 
     /**
+     * @dev Returns a TDD description at a given `index` of all the TDDs stored by the contract.
+     * Use along with {getEnabledTDDsStorageLength} to enumerate all TDDs registered in the system.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
+    function getEnabledTDDByIndex(uint256 index)
+    external
+    view
+    returns (TDD memory){
+        (, address tddAddress) = enabledTddsIndex.at(index);
+        return tddStorage[tddAddress];
+    }
+
+    /**
     * @dev Register a new Thing Description Directory in the system for the message sender.
     *      If the TDD is already registered and enabled, the transaction is rejected. 
     *      You can register a new TDD if the previous one is disabled.
@@ -160,6 +209,9 @@ contract DesmoHub {
             tddBucket[tdd.url] = tdd;
             emit TDDCreated(msg.sender, tdd.url, tdd.disabled, tdd.score);
         }
+        
+        enabledTddsIndex.set(enabledTddsIndex.length(), msg.sender);
+        addressToEnabledTDDsIndex[msg.sender] = enabledTddsIndex.length() - 1;
         tddIndex.set(tddIndex.length(), msg.sender);
     }
     /**
@@ -170,6 +222,7 @@ contract DesmoHub {
         if(tddAlreadyInStorage()){
             tddStorage[msg.sender].disabled = true;
             delete tddBucket[tddStorage[msg.sender].url];
+            enabledTddsIndex.remove(addressToEnabledTDDsIndex[msg.sender]);
             emit TDDDisabled(msg.sender, tddStorage[msg.sender].url);
         } else {
             revert("Not the TDD owner.");
@@ -184,49 +237,20 @@ contract DesmoHub {
         if (tddStorage[msg.sender].disabled == true){
             tddStorage[msg.sender].disabled = false;
             tddBucket[tddStorage[msg.sender].url] = tddStorage[msg.sender];
+            enabledTddsIndex.set(enabledTddsIndex.length(), msg.sender);
+            addressToEnabledTDDsIndex[msg.sender] = enabledTddsIndex.length() - 1;
             emit TDDEnabled(msg.sender, tddStorage[msg.sender].url);
         } else {
             revert("No TDD owner or No TDD to enable.");
         }
     }
-    
+
     /**
-    * @dev Generate a new Request selecting a subset of TDDs. The ID can be later used to retrieve the list of selected TDDs.
-           The generated request ID is emitted as an event.
+    * @dev Update the score of the TDD.
     */
-    function getNewRequestID() 
-    external
-    notEmptyTDDStorage
-    returns (bytes32) {    
-        bytes32 key = bytes32(requestIdCounter);
-        uint256 currentSelectionSize = tddSelectionSize;
-
-        if(currentSelectionSize > tddStorageLength) {
-            currentSelectionSize = tddStorageLength;
-        }
-
-        for(uint256 i = 0; i < tddStorageLength; i++) {
-            if(tddStorage[registeredAddresses[i]].disabled == false) {
-                selectedTDDs[key].push(tddStorage[registeredAddresses[i]].url);
-                currentSelectionSize -= 1;
-            }
-
-            if(currentSelectionSize == 0) {
-                requestIdCounter += 1;
-                emit RequestID(key);
-                return key;
-            }
-        }        
-        revert("Too few TDD registered");
-    }
-
-    function updateScores(bytes32 requestID, bytes1[] memory scores)
-    public {
-        string[] memory tdds = selectedTDDs[requestID];
-        scoreStorage[requestID] = scores;
-        for (uint256 i = 0; i < tdds.length; i++){
-            TDD storage tdd = tddStorage[tddBucket[tdds[i]].owner];
-            tdd.score = tdd.score + uint8(bytes1(scores[i]));
-        }
+    function setScore(address owner, uint8 score)
+    public 
+    onlyScoreManager {
+        tddStorage[owner].score = uint256(score);
     }
 }

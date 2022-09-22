@@ -1,74 +1,45 @@
 import { ethers, waffle } from "hardhat";
 import { DesmoHub, Desmo } from "../typechain";
-import IexecProxyBuild from "@iexec/poco/build/contracts-waffle/IexecInterfaceToken.json";
 import { expect } from "chai";
+import IexecProxyMock from "./mocks/IexecProxyMock";
+import { fail } from "assert";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 describe("Desmo", () => {
   let desmoHub: DesmoHub;
-  let desmo: Desmo;
-  let task: any; 
+  let desmo: Desmo; 
+  const fakeTDDURLs = [
+    "https://test.it/1",
+    "https://test.it/2",
+    "https://test.it/3",
+    "https://test.it/4",
+    "https://test.it/5",
+    "https://test.it/6",
+  ];
+  let addresses: SignerWithAddress[];
 
   beforeEach(async () => {
-    const signers = await ethers.getSigners();
-    const iexecProxy = await waffle.deployMockContract(
-      signers[0],
-      IexecProxyBuild.abi
-    );
-    task = {
-      status: 3,
-      dealid: ethers.constants.HashZero,
-      idx: 0,
-      timeref: 0,
-      contributionDeadline: 0,
-      revealDeadline: 0,
-      finalDeadline: 0,
-      consensusValue: ethers.constants.HashZero,
-      revealCounter: 0,
-      winnerCounter: 0,
-      contributors: [ethers.constants.AddressZero],
-      resultDigest: ethers.constants.HashZero,
-      results: ethers.constants.HashZero,
-      resultsTimestamp: 0,
-      resultsCallback:
-        "0x2000000000000000000000000000000000000000000000000000000000000000000402020202001121445c",
-    };
-    await iexecProxy.mock.viewTask.returns(Object.values(task));
-    const deal = {
-      app: [ethers.constants.AddressZero, ethers.constants.AddressZero, 0],
-      dataset: [ethers.constants.AddressZero, ethers.constants.AddressZero, 0],
-      workerpool: [
-        ethers.constants.AddressZero,
-        ethers.constants.AddressZero,
-        0,
-      ],
-      trust: 0,
-      category: 0,
-      tag: ethers.constants.HashZero,
-      requester: ethers.constants.AddressZero,
-      beneficiary: ethers.constants.AddressZero,
-      callback: ethers.constants.AddressZero,
-      params: ethers.constants.AddressZero,
-      startTime: 0,
-      botFirst: 0,
-      botSize: 0,
-      workerStake: 0,
-      schedulerRewardRatio: 0,
-    };
+    addresses = await ethers.getSigners();
 
-    await iexecProxy.mock.viewDeal.returns(Object.values(deal));
+    const iexecProxy = await IexecProxyMock.deploy();
 
     const DesmoHub = await ethers.getContractFactory("DesmoHub");
     desmoHub = await DesmoHub.deploy();
     await desmoHub.deployed();
+
+    // Register a small set of TDDs
+    for (let i = 0; i < fakeTDDURLs.length; i++) {
+      await desmoHub.connect(addresses[i]).registerTDD(fakeTDDURLs[i]); 
+    }
 
     const Desmo = await ethers.getContractFactory("Desmo");
     desmo = await Desmo.deploy(desmoHub.address, iexecProxy.address);
   });
 
   it("should process a simple query result", async () => {
-    await desmoHub.registerTDD("https://www.desmo.vaimee.it/2019/wot/tdd/v1/TDD:001");
-    const txtRequestID = await (await desmoHub.getNewRequestID()).wait();
-    const requestIDEvent = txtRequestID.events?.find( event => event.event === "RequestID");
+   
+    const txtRequestID = await (await desmo.generateNewRequestID()).wait();
+    const requestIDEvent = txtRequestID.events?.find( event => event.event === "RequestCreated");
     expect(requestIDEvent).to.not.be.undefined;
     
     const requestID = requestIDEvent?.args?.requestID;
@@ -76,18 +47,184 @@ describe("Desmo", () => {
     const txt = await desmo.receiveResult(ethers.constants.HashZero, "0x00");
     await expect(txt)
       .emit(desmo, "QueryCompleted")
-      .withArgs(ethers.constants.HashZero, [
-        requestID,
-        ethers.constants.HashZero,
-        "0x001121445c",
-      ]);
-
-    const scores =await desmoHub.getScoresByRequestID(requestID);
-    const {score} = await desmoHub.getTDDByIndex(0);
+      .withNamedArgs({
+        id: requestID,
+        result: {
+          requestID: requestID,
+          taskID: ethers.constants.HashZero,
+          scores: ["0x02", "0x02", "0x02", "0x02"],
+          result: "0x001121445c",
+        }
+      });
+    const result = await desmo.getQueryResultByRequestID(requestID);
+    const scores = result.scores;
+    
     expect(scores.length).to.equal(4);
     for (let i = 0; i < scores.length; i++) {
       expect(scores[i]).to.equal("0x02");
     }
+
+    const { score } = await desmoHub.getTDDByIndex(0);
     expect(score.toNumber()).to.equal(2);
+  });
+
+  it("should generate a new request ID", async () => {
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: ethers.constants.HashZero,
+        request: {
+          id: ethers.constants.HashZero,
+          selectedTDDsURLs: fakeTDDURLs.slice(0, 4),
+          selectedAddresses: addresses.slice(0, 4).map((address) => address.address),
+        }
+      });
+  });
+
+  it("should select different TDDs for each client", async () => {
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: ethers.constants.HashZero,
+        request: {
+          id: ethers.constants.HashZero,
+          selectedTDDsURLs: fakeTDDURLs.slice(0,4),
+          selectedAddresses: addresses.slice(0, 4).map((address) => address.address),
+        }
+      })
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: `0x${"0".repeat(63)}1`,
+        request: {
+          id: `0x${"0".repeat(63)}1`,
+          selectedTDDsURLs: [fakeTDDURLs[4], fakeTDDURLs[5], fakeTDDURLs[0], fakeTDDURLs[1]],
+          selectedAddresses: [addresses[4].address, addresses[5].address, addresses[0].address, addresses[1].address]
+        }
+      })
+  });
+  
+  it("should revert for empty hub", async () => {
+    const iexecProxy = await IexecProxyMock.deploy();
+    const DesmoHub = await ethers.getContractFactory("DesmoHub");
+    desmoHub = await DesmoHub.deploy();
+    await desmoHub.deployed();
+    const Desmo = await ethers.getContractFactory("Desmo");
+    desmo = await Desmo.deploy(desmoHub.address, iexecProxy.address);
+
+    await expect(desmo.generateNewRequestID()).to.be.revertedWith("No TDDs available");
+
+  });
+
+  it("should revert for all disabled tdds", async () => {
+    const addresses = await ethers.getSigners();
+    for (let i = 0; i < fakeTDDURLs.length; i++) {
+      await desmoHub.connect(addresses[i]).disableTDD();
+    }
+
+    await expect(desmo.generateNewRequestID()).to.be.revertedWith("No TDDs available");
+
+  });
+
+  it("should select less tdds than the requested selection size", async () => {
+    const addresses = await ethers.getSigners();
+    const iexecProxy = await IexecProxyMock.deploy();
+    const DesmoHub = await ethers.getContractFactory("DesmoHub");
+    desmoHub = await DesmoHub.deploy();
+    await desmoHub.deployed();
+    const Desmo = await ethers.getContractFactory("Desmo");
+    desmo = await Desmo.deploy(desmoHub.address, iexecProxy.address);
+
+    for (let i = 0; i < 2; i++) {
+      await desmoHub.connect(addresses[i]).registerTDD(fakeTDDURLs[i]);
+    }
+
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: ethers.constants.HashZero,
+        request: {
+          id: ethers.constants.HashZero,
+          selectedTDDsURLs: fakeTDDURLs.slice(0, 2),
+          selectedAddresses: addresses.slice(0, 2).map((address) => address.address),
+        }
+      });
+  });
+
+  it("should skip disabled TDD", async () => {
+    const addresses = await ethers.getSigners();
+    // Register a small set of TDDs
+    for (let i = 0; i < 2; i++) {
+      await desmoHub.connect(addresses[i]).disableTDD();
+    }
+    
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: ethers.constants.HashZero,
+        request: {
+          id: ethers.constants.HashZero,
+          // Note: after manipulating the TDDs (disable or enable), the order of the TDDs is not guaranteed
+          // the correct way to test this would be with the member chai matcher 
+          // but it is not possible to combine it with the namedArgs matcher
+          selectedTDDsURLs: [fakeTDDURLs[5], fakeTDDURLs[4], fakeTDDURLs[2], fakeTDDURLs[3]],
+          selectedAddresses: [addresses[5].address, addresses[4].address, addresses[2].address, addresses[3].address]
+        }
+      })
+  });
+
+  it("should correctly select different TDDs for each client after disabling", async () => {
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: ethers.constants.HashZero,
+        request: {
+          id: ethers.constants.HashZero,
+          selectedTDDsURLs: fakeTDDURLs.slice(0, 4),
+          selectedAddresses: addresses.slice(0, 4).map((address) => address.address),
+        }
+      })
+    
+    // Register a small set of TDDs
+    for (let i = 0; i < 2; i++) {
+      await desmoHub.connect(addresses[i]).disableTDD();
+    }
+
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: `0x${"0".repeat(63)}1`,
+        request: {
+          id: `0x${"0".repeat(63)}1`,
+          // Note: after manipulating the TDDs (disable or enable), the order of the TDDs is not guaranteed
+          // the correct way to test this would be with the member chai matcher 
+          // but it is not possible to combine it with the namedArgs matcher
+          selectedTDDsURLs: [fakeTDDURLs[5], fakeTDDURLs[4], fakeTDDURLs[2], fakeTDDURLs[3]],
+          selectedAddresses: [addresses[5].address, addresses[4].address, addresses[2].address, addresses[3].address]
+        }
+      })
+  });
+
+  it("should correctly select different TDDs for each client after disabling many tdds", async () => {
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: ethers.constants.HashZero,
+        request: {
+          id: ethers.constants.HashZero,
+          selectedTDDsURLs: fakeTDDURLs.slice(0, 4),
+          selectedAddresses: addresses.slice(0, 4).map((address) => address.address),
+        }
+      })
+  
+    // disable the last 3 TDDs
+    for (let i = 3; i < fakeTDDURLs.length; i++) {
+      await desmoHub.connect(addresses[i]).disableTDD();
+    }
+
+    await expect(desmo.generateNewRequestID())
+      .emit(desmo, "RequestCreated").withNamedArgs({
+        requestID: `0x${"0".repeat(63)}1`,
+        request: {
+          id: `0x${"0".repeat(63)}1`,
+          // Note: after manipulating the TDDs (disable or enable), the order of the TDDs is not guaranteed
+          // the correct way to test this would be with the member chai matcher 
+          // but it is not possible to combine it with the namedArgs matcher
+          selectedTDDsURLs: [fakeTDDURLs[1], fakeTDDURLs[2], fakeTDDURLs[0]],
+          selectedAddresses: [addresses[1].address, addresses[2].address, addresses[0].address]
+        }
+      })
   });
 });
