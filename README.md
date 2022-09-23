@@ -1,5 +1,13 @@
-![DESMO-LD](https://raw.githubusercontent.com/vaimee/desmo/c763cec12f6c9060a9f1a3335ff4cff60ece3df2/imgs/desmo-logo.png)
-# DESMO-LD Contracts
+<img src="https://github.com/vaimee/desmo/blob/main/imgs/desmo-logo.png" width="40%" alt='DESMO'/>
+
+# Contracts
+
+![](https://img.shields.io/badge/Ethereum-3C3C3D?style=flat-square&logo=Ethereum&logoColor=618bf3)
+![](https://img.shields.io/badge/Solidity-^0.6.0-e6e6e6?style=flat-square&logo=solidity&logoColor=black?labelColor=e6e6e6)
+<a href="https://github.com/vaimee/desmo-contracts/issues" target="_blank"><img src="https://img.shields.io/github/issues/vaimee/desmo-contracts.svg?style=flat-square" alt="Issues" /></a>
+<a href="https://github.com/vaimee/desmo-contracts/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/github/license/vaimee/desmo-contracts.svg?style=flat-square" alt="License" /></a>
+<a href="https://discord.gg/B7WZswnH" target="_blank"><img src="https://img.shields.io/badge/Discord-7289DA?style=flat-square&logo=discord&logoColor=white&label=desmo" alt="Discord chat" /></a>
+<a href="https://www.linkedin.com/company/vaimee/" target="_blank"><img src="https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&color=blue" alt="LinkedIn" /></a>
 
 **Overview** 
 
