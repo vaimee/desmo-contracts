@@ -3,3 +3,4 @@ scripts
 contracts/**/*.sol
 test
 node_modules
+.*
