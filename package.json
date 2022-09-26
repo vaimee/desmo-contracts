@@ -4,6 +4,7 @@
   "repository": "https://github.com/vaimee/desmo-contracts",
   "homepage": "https://github.com/vaimee/desmo",
   "scripts": {
+    "postinstall": "bash -c '[ -f .npmignore ] && npm run build",
     "build": "hardhat compile",
     "deploy:init": "hardhat --network viviani registerTDDs",
     "deploy": "hardhat run --network vivianiWhiteListed scripts/deploy.ts",
