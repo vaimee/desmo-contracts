@@ -104,15 +104,15 @@ task(
 const config: HardhatUserConfig = {
   solidity: "0.6.12",
   networks: {
-    vivianiWhiteListed: {
-      url: "https://viviani.iex.ec",
+    bellecourWhiteListed: {
+      url: "https://bellecour.iex.ec",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    viviani: {
+    bellecour: {
       url: "https://viviani.iex.ec",
       accounts: {
-        mnemonic: "test test test test test test test test test test test junk",
+        mnemonic: process.env.DEPLOY_TDD_WALLET_MNEMONIC ?? "test test test test test test test test test test test junk",
         count: 10
       }
     }

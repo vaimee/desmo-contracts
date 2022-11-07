@@ -5,8 +5,8 @@
   "homepage": "https://github.com/vaimee/desmo",
   "scripts": {
     "build": "hardhat compile",
-    "deploy:init": "hardhat --network viviani registerTDDs",
-    "deploy": "hardhat run --network vivianiWhiteListed scripts/deploy.ts",
+    "deploy:init": "hardhat --network bellecour registerTDDs",
+    "deploy": "hardhat run --network bellecourWhiteListed scripts/deploy.ts",
     "test": "hardhat test",
     "lint": "eslint . --fix"
   },
