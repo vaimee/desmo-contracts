@@ -34,6 +34,8 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
     mapping(bytes32 => bytes32) private requestIDtoTaskID;
     mapping(bytes32 => QueryResult) private values;
 
+    mapping(bytes32 => uint256) private reputations;
+
     DesmoHub private desmoHub;
 
     // -- Events --
@@ -75,6 +77,13 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
         returns (QueryResult memory result)
     {
         return values[requestIDtoTaskID[requestID]];
+    }
+
+    /**
+     * @dev retrive the current score for one
+     */
+    function getTDDReputation(address tddAddress) public view returns (uint256 score) {
+        return reputations[0x626c756500000000000000000000000000000000000000000000000000000000];
     }
 
     /**
@@ -142,13 +151,11 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
     {
         bytes memory results = _iexecDoracleGetVerifiedResult(taskID);
         values[taskID] = _processQueryResult(taskID, results);
-        bytes1[] storage scores = values[taskID].scores;
-        Request storage originalRequest = requests[values[taskID].requestID];
-        
-        for(uint i = 0; i < originalRequest.selectedAddresses.length; i++) {
-            desmoHub.setScore(originalRequest.selectedAddresses[i], uint8(scores[i]));
-        }
-        
+        bytes1[] memory scores = values[taskID].scores;
+        Request memory originalRequest = requests[values[taskID].requestID];
+            
+        reputations[0x626c756500000000000000000000000000000000000000000000000000000000] = 1;
+
         emit QueryCompleted(taskID, values[taskID]);
     }
         

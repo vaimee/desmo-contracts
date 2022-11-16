@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-
+import deployed from "./deployed.json";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
@@ -32,11 +32,12 @@ task(
       const url = `https://desmold-zion-${i + 1}.vaimee.it`;
       await desmoHub.connect(account).registerTDD(url, {
         from: account.address,
+        gasLimit: 1000000,
       });
       console.log("Registered", url);
     }
   }
-).addParam("desmoHubAddress", "the address of the desmo-ld hub");
+).addParam("desmoHubAddress", "the address of the desmo-ld hub", deployed.desmoHub);
 
 task(
   "listTDDs",
@@ -50,7 +51,7 @@ task(
 
     console.log("Number of TDDs:", tdds);
   }
-).addParam("desmoHubAddress", "the address of the desmo-ld hub");
+).addParam("desmoHubAddress", "the address of the desmo-ld hub", deployed.desmoHub);
 
 task(
   "generateRequestId",
@@ -63,13 +64,13 @@ task(
     const txData = await tx.wait();
 
     const event = txData.events?.find((event) => {
-      return event.event === "RequestID";
+      return event.event === "RequestCreated";
     });
 
     const id = event?.args;
     console.log("Your request id:", id);
   }
-).addParam("desmoAddress", "the address of the desmo-ld");
+).addParam("desmoAddress", "the address of the desmo-ld", deployed.desmo);
 
 task(
   "receiveResult",
@@ -86,17 +87,52 @@ task(
     );
 
     const txData = await tx.wait();
-
+    
     const event = txData.events?.find((event) => {
-      return event.event === "QueryResult";
+      return event.event === "QueryCompleted";
     });
 
     const result = event?.args;
     console.log(result);
   }
 )
-  .addParam("desmoContractAddress", "the address of the desmo-ld contract")
+  .addParam("desmoContractAddress", "the address of the desmo-ld contract", deployed.desmo)
   .addParam("taskId", "the id of the task");
+
+task(
+  "listQueries",
+  "lists Query completed Events for this contract",
+  async (taskArgs: { desmoAddress: string; }, hre) => {
+    const desmoLDContract = await hre.ethers.getContractFactory("Desmo");
+    const desmoContract = await desmoLDContract.attach(
+      taskArgs.desmoAddress
+    );
+    
+    
+    const events = await desmoContract.queryFilter(desmoContract.filters.QueryCompleted())
+    console.log(events.map((event) => ({id: event.args.id, result: event.args.result, scores: event.args.result.scores})))
+  }
+)
+  .addParam("desmoAddress", "the address of the desmo-ld contract", deployed.desmo)
+
+task(
+  "readHubMapping",
+  "lists Query completed Events for this contract",
+  async (taskArgs: { desmoAddress: string; }, hre) => {
+    const desmoLDContract = await hre.ethers.getContractFactory("DesmoHub");
+    const desmoHubContract = await desmoLDContract.attach(
+      taskArgs.desmoAddress
+    );
+    /*
+    '0x93F7F3dd8216CC80F464856A428C7c727d84E6e9',
+    '0x78f5A6C8eEd2da4f0C71095046312db265C3c412',
+    '0x065B2fCF270a40629c8b68Da3B0CB2Ad5c2a2956',
+    '0xF6B80B80Ac8815d103Dea5060b7719f09ADd7A73'
+    */
+    console.log(await desmoHubContract.test())
+  }
+)
+  .addParam("desmoAddress", "the address of the desmo-ld contract", deployed.desmoHub)
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -110,7 +146,7 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     bellecour: {
-      url: "https://viviani.iex.ec",
+      url: "https://bellecour.iex.ec",
       accounts: {
         mnemonic: process.env.DEPLOY_TDD_WALLET_MNEMONIC ?? "test test test test test test test test test test test junk",
         count: 10
