@@ -30,10 +30,11 @@ task(
       const desmoLDContract = await hre.ethers.getContractFactory("DesmoHub");
       const desmoHub = await desmoLDContract.attach(taskArgs.desmoHubAddress);
       const url = `https://desmold-zion-${i + 1}.vaimee.it`;
-      await desmoHub.connect(account).registerTDD(url, {
+      const tx = await desmoHub.connect(account).registerTDD(url, {
         from: account.address,
         gasLimit: 1000000,
       });
+      await tx.wait();
       console.log("Registered", url);
     }
   }
@@ -110,29 +111,13 @@ task(
     
     
     const events = await desmoContract.queryFilter(desmoContract.filters.QueryCompleted())
+    const failedQueries = await desmoContract.queryFilter(desmoContract.filters.QueryCompleted())
+    
     console.log(events.map((event) => ({id: event.args.id, result: event.args.result, scores: event.args.result.scores})))
+    console.log(failedQueries.map((event) => ({id: event.args.id })))
   }
 )
   .addParam("desmoAddress", "the address of the desmo-ld contract", deployed.desmo)
-
-task(
-  "readHubMapping",
-  "lists Query completed Events for this contract",
-  async (taskArgs: { desmoAddress: string; }, hre) => {
-    const desmoLDContract = await hre.ethers.getContractFactory("DesmoHub");
-    const desmoHubContract = await desmoLDContract.attach(
-      taskArgs.desmoAddress
-    );
-    /*
-    '0x93F7F3dd8216CC80F464856A428C7c727d84E6e9',
-    '0x78f5A6C8eEd2da4f0C71095046312db265C3c412',
-    '0x065B2fCF270a40629c8b68Da3B0CB2Ad5c2a2956',
-    '0xF6B80B80Ac8815d103Dea5060b7719f09ADd7A73'
-    */
-    console.log(await desmoHubContract.test())
-  }
-)
-  .addParam("desmoAddress", "the address of the desmo-ld contract", deployed.desmoHub)
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more

@@ -10,6 +10,8 @@ describe("Desmo", () => {
   let desmoHub: DesmoHub;
   let desmo: Desmo; 
   let addresses: SignerWithAddress[];
+  let iexecProxy: MockContract;
+
   const fakeTDDURLs = [
     "https://test.it/1",
     "https://test.it/2",
@@ -22,7 +24,7 @@ describe("Desmo", () => {
   beforeEach(async () => {
     addresses = await ethers.getSigners();
 
-    const iexecProxy = await IexecProxyMock.deploy();
+    iexecProxy = await IexecProxyMock.deploy();
     desmoHub =  await deployDesmoHub();
     desmo = await deployDesmo(desmoHub, iexecProxy);
     
@@ -59,6 +61,44 @@ describe("Desmo", () => {
 
     const { score } = await desmoHub.getTDDByIndex(0);
     expect(score.toNumber()).to.equal(2);
+  });
+
+  it("should emit query failed if no data is received", async () => {
+   
+    const txtRequestID = await (await desmo.generateNewRequestID()).wait();
+    const requestIDEvent = txtRequestID.events?.find( event => event.event === "RequestCreated");
+    expect(requestIDEvent).to.not.be.undefined;
+    
+    const requestID = requestIDEvent?.args?.requestID;
+
+    // Force task to fail 
+    const task = {
+      status: 3,
+      dealid: ethers.constants.HashZero,
+      idx: 0,
+      timeref: 0,
+      contributionDeadline: 0,
+      revealDeadline: 0,
+      finalDeadline: 0,
+      consensusValue: ethers.constants.HashZero,
+      revealCounter: 0,
+      winnerCounter: 0,
+      contributors: [ethers.constants.AddressZero],
+      resultDigest: ethers.constants.HashZero,
+      results: ethers.constants.HashZero,
+      resultsTimestamp: 0,
+      resultsCallback:
+        "0x",
+    }
+    await iexecProxy.mock.viewTask.returns(Object.values(task));
+    
+    const txt = await desmo.receiveResult(ethers.constants.HashZero, "0x00");
+    await expect(txt)
+      .emit(desmo, "QueryFailed")
+      .withNamedArgs({
+        id: requestID
+      });
+    
   });
 
   it("should generate a new request ID", async () => {

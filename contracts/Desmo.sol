@@ -34,13 +34,13 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
     mapping(bytes32 => bytes32) private requestIDtoTaskID;
     mapping(bytes32 => QueryResult) private values;
 
-    mapping(bytes32 => uint256) private reputations;
 
     DesmoHub private desmoHub;
 
     // -- Events --
 
     event QueryCompleted(bytes32 indexed id, QueryResult result);
+    event QueryFailed(bytes32 indexed id);
     event RequestCreated(bytes32 indexed requestID, Request request);
 
     // -- Functions --
@@ -76,14 +76,16 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
         view
         returns (QueryResult memory result)
     {
-        return values[requestIDtoTaskID[requestID]];
-    }
+        bytes32 taskID = requestIDtoTaskID[requestID];
+        bytes memory results = _iexecDoracleGetVerifiedResult(taskID);
+        
+        if(results.length == 0) {
+            // Query failed returning empty result
+            return QueryResult(requestID, taskID, new bytes1[](0), new bytes(0));
+        }
 
-    /**
-     * @dev retrive the current score for one
-     */
-    function getTDDReputation(address tddAddress) public view returns (uint256 score) {
-        return reputations[0x626c756500000000000000000000000000000000000000000000000000000000];
+        QueryResult memory parsed = _processQueryResult(taskID, results);
+        return parsed;
     }
 
     /**
@@ -150,13 +152,21 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
         override
     {
         bytes memory results = _iexecDoracleGetVerifiedResult(taskID);
-        values[taskID] = _processQueryResult(taskID, results);
-        bytes1[] memory scores = values[taskID].scores;
-        Request memory originalRequest = requests[values[taskID].requestID];
-            
-        reputations[0x626c756500000000000000000000000000000000000000000000000000000000] = 1;
+        
+        if(results.length == 0) {
+            emit QueryFailed(taskID);
+            return;
+        }
 
-        emit QueryCompleted(taskID, values[taskID]);
+        QueryResult memory parsed = _processQueryResult(taskID, results);
+        bytes1[] memory scores = parsed.scores;
+        Request memory originalRequest = requests[parsed.requestID];
+        
+        for(uint i = 0; i < originalRequest.selectedAddresses.length; i++) {
+            desmoHub.setScore(originalRequest.selectedAddresses[i], uint8(scores[i]));
+        }
+        
+        emit QueryCompleted(taskID, parsed);
     }
         
     function _processQueryResult(bytes32 taskID, bytes memory payload)
