@@ -111,7 +111,7 @@ task(
     
     
     const events = await desmoContract.queryFilter(desmoContract.filters.QueryCompleted())
-    const failedQueries = await desmoContract.queryFilter(desmoContract.filters.QueryCompleted())
+    const failedQueries = await desmoContract.queryFilter(desmoContract.filters.QueryFailed())
     
     console.log(events.map((event) => ({id: event.args.id, result: event.args.result, scores: event.args.result.scores})))
     console.log(failedQueries.map((event) => ({id: event.args.id })))
