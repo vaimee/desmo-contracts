@@ -64,7 +64,16 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
         view
         returns (QueryResult memory result)
     {
-        return values[taskID];
+        bytes memory results = _iexecDoracleGetVerifiedResult(taskID);
+        
+        if(results.length == 0) {
+            // Query failed returning empty result
+            // TODO: retrive the request ID from the task ID
+            return QueryResult(0x0, taskID, new bytes1[](0), new bytes(0));
+        }
+
+        QueryResult memory parsed = _processQueryResult(taskID, results);
+        return parsed;
     }
 
     /**
