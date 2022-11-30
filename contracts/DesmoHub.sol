@@ -79,7 +79,7 @@ contract DesmoHub {
     function setScore(address owner, uint8 score)
     public 
     onlyScoreManager {
-        tddStorage[owner].score = uint256(score);
+        tddStorage[owner].score = tddStorage[owner].score + uint256(score);
     }
 
     /**
