@@ -28,7 +28,7 @@ export default class IexecProxyMock {
             results: ethers.constants.HashZero,
             resultsTimestamp: 0,
             resultsCallback:
-                "0x2000000000000000000000000000000000000000000000000000000000000000000402020202001121445c",
+                "0x00000000000000000000000000000000000000000000000000000000000000000402020202001121445c",
         };
         await iexecProxy.mock.viewTask.returns(Object.values(task));
         const deal = {

@@ -170,7 +170,7 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
         QueryResult memory parsed = _processQueryResult(taskID, results);
         bytes1[] memory scores = parsed.scores;
         Request memory originalRequest = requests[parsed.requestID];
-        
+
         for(uint i = 0; i < originalRequest.selectedAddresses.length; i++) {
             desmoHub.setScore(originalRequest.selectedAddresses[i], uint8(scores[i]));
         }
@@ -183,30 +183,23 @@ contract Desmo is Ownable, IexecDoracle, IOracleConsumer {
         pure
         returns (QueryResult memory result)
     {
-        uint8 requestIDLength;
+        uint8 requestIDLength = 32;
         uint8 scoreAmount;
         bytes32 requestID;
+     
+        requestID = abi.decode(payload, (bytes32));
 
-        
-        requestIDLength = uint8(bytes1(payload[0]));
-        
-        if( requestIDLength != 32 ) {
-            revert("Invalid request ID length; expected 32 bytes");
-        }
-
-        requestID = _bytesToBytes32(payload,1);
-
-        scoreAmount = uint8(bytes1(payload[requestIDLength + 1]));
+        scoreAmount = uint8(bytes1(payload[requestIDLength]));
         bytes1[] memory resultScores = new bytes1[](scoreAmount);
-        
+
         for(uint8 i = 0; i < scoreAmount; i++) {
-            bytes1 score = bytes1(payload[requestIDLength + 2 + i]);
+            bytes1 score = bytes1(payload[requestIDLength + i + 1]);
             resultScores[i] = score;
         }
 
-        bytes memory queryResult = new bytes(payload.length - requestIDLength - 2 - scoreAmount);
+        bytes memory queryResult = new bytes(payload.length - 1 - requestIDLength - scoreAmount);
         for(uint8 i = 0; i < queryResult.length; i++) {
-            queryResult[i] = payload[requestIDLength + 2 + scoreAmount + i];
+            queryResult[i] = payload[requestIDLength + scoreAmount + i + 1];
         }
 
         return QueryResult(requestID, taskID, resultScores, queryResult);
